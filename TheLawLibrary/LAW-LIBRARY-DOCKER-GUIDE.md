@@ -52,7 +52,7 @@ port: 3306
 host: 'localhost'
 port: 3311  // Changed to Docker MySQL port
 database: 'law_library'
-username: 'root'
+username: 'root'  
 password: 'lawlibrary123'
 ```
 

@@ -1,5 +1,3 @@
-// lib/screens/law_form_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:law_library/models/law.dart';
@@ -8,13 +6,9 @@ import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/providers/theme_provider.dart';
 
 class LawFormScreen extends StatefulWidget {
-  final Law?
-      law; // If null, we're adding a new law. If not null, we're editing.
+  final Law? law;
 
-  const LawFormScreen({
-    super.key,
-    this.law,
-  });
+  const LawFormScreen({super.key, this.law});
 
   @override
   State<LawFormScreen> createState() => _LawFormScreenState();
@@ -22,23 +16,24 @@ class LawFormScreen extends StatefulWidget {
 
 class _LawFormScreenState extends State<LawFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _chapterController;
-  late TextEditingController _categoryController;
-  late TextEditingController _titleController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _compoundFineController;
-  late TextEditingController _secondCompoundFineController;
-  late TextEditingController _thirdCompoundFineController;
-  late TextEditingController _fourthCompoundFineController;
-  late TextEditingController _fifthCompoundFineController;
+
+  late final TextEditingController _chapterController;
+  late final TextEditingController _categoryController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _compoundFineController;
+  late final TextEditingController _secondCompoundFineController;
+  late final TextEditingController _thirdCompoundFineController;
+  late final TextEditingController _fourthCompoundFineController;
+  late final TextEditingController _fifthCompoundFineController;
+
+  bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing law data if editing
     _chapterController = TextEditingController(text: widget.law?.chapter ?? '');
-    _categoryController =
-        TextEditingController(text: widget.law?.category ?? '');
+    _categoryController = TextEditingController(text: widget.law?.category ?? '');
     _titleController = TextEditingController(text: widget.law?.title ?? '');
     _descriptionController =
         TextEditingController(text: widget.law?.description ?? '');
@@ -69,201 +64,171 @@ class _LawFormScreenState extends State<LawFormScreen> {
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      final lawProvider = Provider.of<LawProvider>(context, listen: false);
+    if (!_formKey.currentState!.validate()) return;
 
-      print('Original Law: ${widget.law?.toJson()}'); // Debug log
-      print('New Chapter: ${_chapterController.text}'); // Debug log
+    setState(() {
+      _isSubmitting = true;
+    });
 
-      final law = Law(
-        chapter: _chapterController
-            .text, // MODIFIED: Always use the controller text for the Law object
-        category: _categoryController.text,
-        title: _titleController.text,
-        description: _descriptionController.text,
-        compoundFine: _compoundFineController.text,
-        secondCompoundFine: _secondCompoundFineController.text,
-        thirdCompoundFine: _thirdCompoundFineController.text,
-        fourthCompoundFine: _fourthCompoundFineController.text,
-        fifthCompoundFine: _fifthCompoundFineController.text,
-      );
+    final lawProvider = context.read<LawProvider>();
 
-      print('Submitting Law: ${law.toJson()}'); // Debug log
+    final law = Law(
+      chapter: _chapterController.text.trim(),
+      category: _categoryController.text.trim(),
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      compoundFine: _compoundFineController.text.trim(),
+      secondCompoundFine: _secondCompoundFineController.text.trim(),
+      thirdCompoundFine: _thirdCompoundFineController.text.trim(),
+      fourthCompoundFine: _fourthCompoundFineController.text.trim(),
+      fifthCompoundFine: _fifthCompoundFineController.text.trim(),
+    );
 
-      bool success;
-      if (widget.law == null) {
-        // Adding new law
-        success = await lawProvider.createLaw(law);
-      } else {
-        // Updating existing law
-        // MODIFIED: Pass the original chapter to identify the record in the backend
-        success = await lawProvider.updateLaw(law,
-            originalChapter: widget.law!.chapter);
-      }
+    final success = widget.law == null
+        ? await lawProvider.createLaw(law)
+        : await lawProvider.updateLaw(law, originalChapter: widget.law!.chapter);
 
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.law == null
-                ? 'Law added successfully'
-                : 'Law updated successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context);
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save law'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    if (!mounted) return;
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success
+            ? widget.law == null
+            ? 'Law added successfully'
+            : 'Law updated successfully'
+            : 'Failed to save law'),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
+
+    if (success) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider =
-        Provider.of<ThemeProvider>(context); // Get ThemeProvider
-    final uiDensity = themeProvider.uiDensity; // Get uiDensity
+    final themeProvider = context.watch<ThemeProvider>();
+    final spacing = AppTheme.getSpacing(AppTheme.baseSpacing16, themeProvider.uiDensity);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.law == null ? 'Add New Law' : 'Edit Law'),
+        title: Text(widget.law == null ? 'Add Law' : 'Edit Law'),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: EdgeInsets.all(AppTheme.getSpacing(
-              AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
+          padding: EdgeInsets.all(spacing),
           children: [
-            TextFormField(
-              controller: _chapterController,
-              decoration: const InputDecoration(
-                labelText: 'Chapter',
-                hintText: 'Enter chapter number',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a chapter';
-                }
-                return null;
-              },
+            _buildSection(
+              title: 'Law Information',
+              children: [
+                _textField(_chapterController, 'Chapter', required: true, key: UniqueKey()),
+                _textField(_categoryController, 'Category', required: true, key: UniqueKey()),
+                _textField(_titleController, 'Title', required: true, key: UniqueKey()),
+              ],
             ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _categoryController,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                hintText: 'Enter category',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a category';
-                }
-                return null;
-              },
+            _buildSection(
+              title: 'Offence Details',
+              children: [
+                _textField(
+                  _descriptionController,
+                  'Description',
+                  required: true,
+                  maxLines: 4,
+                  key: UniqueKey(),
+                ),
+              ],
             ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                hintText: 'Enter title',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
-                }
-                return null;
-              },
+            _buildSection(
+              title: 'Compound Fines',
+              subtitle: 'Enter applicable fines (optional)',
+              children: [
+                _numberField(_compoundFineController, 'First Offence', key: UniqueKey()),
+                _numberField(_secondCompoundFineController, 'Second Offence', key: UniqueKey()),
+                _numberField(_thirdCompoundFineController, 'Third Offence', key: UniqueKey()),
+                _numberField(_fourthCompoundFineController, 'Fourth Offence', key: UniqueKey()),
+                _numberField(_fifthCompoundFineController, 'Fifth Offence', key: UniqueKey()),
+              ],
             ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Enter description',
-              ),
-              maxLines: 3,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a description';
-                }
-                return null;
-              },
-            ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _compoundFineController,
-              decoration: const InputDecoration(
-                labelText: 'First Compound Fine',
-                hintText: 'Enter first compound fine',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter the first compound fine';
-                }
-                return null;
-              },
-            ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _secondCompoundFineController,
-              decoration: const InputDecoration(
-                labelText: 'Second Compound Fine',
-                hintText: 'Enter second compound fine',
-              ),
-            ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _thirdCompoundFineController,
-              decoration: const InputDecoration(
-                labelText: 'Third Compound Fine',
-                hintText: 'Enter third compound fine',
-              ),
-            ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _fourthCompoundFineController,
-              decoration: const InputDecoration(
-                labelText: 'Fourth Compound Fine',
-                hintText: 'Enter fourth compound fine',
-              ),
-            ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing16, uiDensity)), // Use dynamic spacing
-            TextFormField(
-              controller: _fifthCompoundFineController,
-              decoration: const InputDecoration(
-                labelText: 'Fifth Compound Fine',
-                hintText: 'Enter fifth compound fine',
-              ),
-            ),
-            SizedBox(
-                height: AppTheme.getSpacing(
-                    AppTheme.baseSpacing24, uiDensity)), // Use dynamic spacing
+            SizedBox(height: spacing * 1.5),
             ElevatedButton(
-              onPressed: _submitForm,
-              child: Text(widget.law == null ? 'Add Law' : 'Update Law'),
+              onPressed: _isSubmitting ? null : _submitForm,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+                  : Text(widget.law == null ? 'Save Law' : 'Update Law'),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    String? subtitle,
+    required List<Widget> children,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          if (subtitle != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          const SizedBox(height: 12),
+          ...children,
+        ]),
+      ),
+    );
+  }
+
+  Widget _textField(
+      TextEditingController controller,
+      String label, {
+        bool required = false,
+        int maxLines = 1,
+        Key? key,
+      }) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        decoration: InputDecoration(labelText: label),
+        validator: required
+            ? (value) => value == null || value.isEmpty ? 'Required field' : null
+            : null,
+      ),
+    );
+  }
+
+  Widget _numberField(TextEditingController controller, String label, {Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(labelText: label),
+        validator: null,
       ),
     );
   }

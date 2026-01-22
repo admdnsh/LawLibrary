@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:law_library/providers/law_provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:law_library/models/law.dart';
+import 'package:law_library/providers/law_provider.dart';
+import 'package:law_library/providers/theme_provider.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/screens/law_form_screen.dart';
-import 'package:law_library/providers/theme_provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -18,36 +20,62 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  Timer? _debounce;
+
   @override
   void initState() {
     super.initState();
-    // Fetch initial laws when the screen is created
-    Provider.of<LawProvider>(context, listen: false).fetchLaws(refresh: true);
-
-    // Add a listener for infinite scrolling if needed later
-    // _scrollController.addListener(() {
-    //   if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-    //     // Load more laws
-    //   }
-    // });
+    context.read<LawProvider>().fetchLaws(refresh: true);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
+    _debounce?.cancel();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      context.read<LawProvider>().setSearchQuery(query);
+      context.read<LawProvider>().fetchLaws(refresh: true);
+    });
+  }
+
+  Future<bool> _confirmDelete(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Law'),
+        content: const Text(
+          'This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    ) ??
+        false;
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
+    final themeProvider = context.watch<ThemeProvider>();
     final uiDensity = themeProvider.uiDensity;
+    final spacing =
+    AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Panel'),
-      ),
+      appBar: AppBar(title: const Text('Admin Panel')),
       body: Consumer<LawProvider>(
         builder: (context, lawProvider, _) {
           if (lawProvider.isLoading && lawProvider.laws.isEmpty) {
@@ -56,204 +84,222 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
           return Column(
             children: [
+              /// 🔍 Search Bar
               Padding(
-                padding: EdgeInsets.all(
-                    AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+                padding: EdgeInsets.all(spacing),
                 child: TextField(
                   controller: _searchController,
+                  onChanged: _onSearchChanged,
                   decoration: InputDecoration(
-                    labelText: 'Search Laws',
+                    labelText: 'Search laws',
                     prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor:
+                    Theme.of(context).colorScheme.surfaceVariant,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.getSpacing(
-                          AppTheme.borderRadiusMedium, uiDensity)),
+                      borderRadius: BorderRadius.circular(
+                        AppTheme.getSpacing(
+                            AppTheme.borderRadiusMedium, uiDensity),
+                      ),
                       borderSide: BorderSide.none,
                     ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.surfaceVariant,
                   ),
-                  onChanged: (query) {
-                    // Reset to first page on search
-                    lawProvider.setSearchQuery(query);
-                    lawProvider.fetchLaws(refresh: true);
-                  },
                 ),
               ),
+
+              /// 📭 Empty State
               if (lawProvider.laws.isEmpty && !lawProvider.isLoading)
                 Expanded(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .secondary
-                              .withOpacity(0.5),
-                        ),
-                        SizedBox(
-                            height: AppTheme.getSpacing(
-                                AppTheme.baseSpacing16, uiDensity)),
+                        const Icon(Icons.search_off, size: 64),
+                        const SizedBox(height: 16),
                         Text(
                           'No laws found',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        SizedBox(
-                            height: AppTheme.getSpacing(
-                                AppTheme.baseSpacing8, uiDensity)),
-                        Text(
-                          'Try adjusting your search criteria',
                           style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color,
-                                  ),
+                          Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Try adjusting your search or add a new law.',
                           textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Law'),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const LawFormScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ).animate().fadeIn().scale(),
                   ),
                 )
+
+              /// 📜 Law List
               else
                 Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.getSpacing(
-                            AppTheme.baseSpacing16, uiDensity)),
-                    itemCount: lawProvider.laws.length,
-                    itemBuilder: (context, index) {
-                      final law = lawProvider.laws[index];
-                      return Card(
-                        margin: EdgeInsets.only(
-                            bottom: AppTheme.getSpacing(
-                                AppTheme.baseSpacing16, uiDensity)),
-                        child: ListTile(
-                          title: Text(law.title),
-                          subtitle: Text(law.description),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          LawFormScreen(law: law),
-                                    ),
-                                  );
-                                },
-                                tooltip: 'Edit Law',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () async {
-                                  final confirmed = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Delete Law'),
-                                      content: const Text(
-                                        'Are you sure you want to delete this law? This action cannot be undone.',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, true),
-                                          child: Text(
-                                            'Delete',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .error,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                  child: RefreshIndicator(
+                    onRefresh: () =>
+                        lawProvider.fetchLaws(refresh: true),
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.fromLTRB(
+                        spacing,
+                        0,
+                        spacing,
+                        90, // FAB spacing
+                      ),
+                      itemCount: lawProvider.laws.length,
+                      itemBuilder: (context, index) {
+                        final Law law = lawProvider.laws[index];
 
-                                  if (confirmed == true) {
-                                    final success = await lawProvider
-                                        .deleteLaw(law.chapter);
-                                    if (success && context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content:
-                                              Text('Law deleted successfully'),
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                tooltip: 'Delete Law',
-                              ),
-                            ],
+                        return Card(
+                          elevation: 1.5,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      );
-                    },
+                          margin:
+                          EdgeInsets.only(bottom: spacing),
+                          child: ListTile(
+                            title: Text(
+                              'Chapter ${law.chapter} • ${law.title}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4),
+                                Text(
+                                  law.description,
+                                  maxLines: 2,
+                                  overflow:
+                                  TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Category: ${law.category}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall,
+                                ),
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  tooltip: 'Edit law',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            LawFormScreen(
+                                                law: law),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .error,
+                                  tooltip: 'Delete law',
+                                  onPressed: () async {
+                                    final confirmed =
+                                    await _confirmDelete(
+                                        context);
+                                    if (confirmed) {
+                                      final success =
+                                      await lawProvider
+                                          .deleteLaw(
+                                          law.chapter);
+                                      if (success &&
+                                          context.mounted) {
+                                        ScaffoldMessenger.of(
+                                            context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Law deleted successfully'),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              if (!lawProvider.isLoadingMore && !lawProvider.isLoading)
+
+              /// ⏭ Pagination
+              if (!lawProvider.isLoading)
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                      vertical: AppTheme.getSpacing(
-                          AppTheme.baseSpacing16, uiDensity)),
+                  padding:
+                  EdgeInsets.symmetric(vertical: spacing),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.arrow_back),
-                        onPressed: lawProvider.currentPage > 1
-                            ? () =>
-                                lawProvider.setPage(lawProvider.currentPage - 1)
+                        onPressed:
+                        lawProvider.currentPage > 1
+                            ? () => lawProvider.setPage(
+                            lawProvider.currentPage -
+                                1)
                             : null,
-                        tooltip: 'Previous Page',
                       ),
-                      Text('Page ${lawProvider.currentPage}'),
+                      Text(
+                        'Page ${lawProvider.currentPage}'
+                            '${lawProvider.hasMorePages ? '' : ' (Last)'}',
+                      ),
                       IconButton(
                         icon: const Icon(Icons.arrow_forward),
-                        onPressed: lawProvider.hasMorePages
-                            ? () =>
-                                lawProvider.setPage(lawProvider.currentPage + 1)
+                        onPressed:
+                        lawProvider.hasMorePages
+                            ? () => lawProvider.setPage(
+                            lawProvider.currentPage +
+                                1)
                             : null,
-                        tooltip: 'Next Page',
                       ),
                     ],
                   ),
-                ),
-              if (lawProvider.isLoadingMore)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(),
                 ),
             ],
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+
+      /// ➕ Add Law
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text('Add Law'),
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const LawFormScreen(),
+              builder: (_) => const LawFormScreen(),
             ),
           );
         },
-        child: const Icon(Icons.add),
-        tooltip: 'Add New Law',
       ),
     );
   }
