@@ -1,374 +1,184 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:law_library/providers/theme_provider.dart';
-import 'package:law_library/theme/app_theme.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:law_library/providers/law_provider.dart';
+import 'package:law_library/theme/app_theme.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, _) {
-        final uiDensity = themeProvider.uiDensity;
-        return ListView(
-          padding: EdgeInsets.all(
-              AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+    final themeProvider = context.watch<ThemeProvider>();
+    final uiDensity = themeProvider.uiDensity;
+    final l10n = AppLocalizations.of(context)!;
+
+    return ListView(
+      padding: EdgeInsets.all(
+        AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
+      ),
+      children: [
+        // ---------- Appearance ----------
+        _section(
+          context,
+          title: l10n.appearance,
           children: [
-            _buildSection(
-              context,
-              'Appearance',
-              [
-                SwitchListTile(
-                  title: const Text('Dark Mode'),
-                  subtitle: const Text('Toggle dark/light theme'),
-                  value: themeProvider.themeMode == ThemeMode.dark,
-                  onChanged: (value) {
-                    themeProvider.setThemeMode(
-                      value ? ThemeMode.dark : ThemeMode.light,
-                    );
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  title: const Text('UI Density'),
-                  subtitle: Text(
-                      'Current: ${themeProvider.uiDensity.toString().split('.').last}'),
-                  trailing: DropdownButton<UiDensity>(
-                    value: themeProvider.uiDensity,
-                    items: UiDensity.values.map((density) {
-                      return DropdownMenuItem<UiDensity>(
-                        value: density,
-                        child: Text(density.toString().split('.').last),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        themeProvider.setUiDensity(value);
-                      }
-                    },
-                  ),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  title: const Text('Font Size'),
-                  subtitle: Text(
-                      'Current: ${themeProvider.fontSize.toString().split('.').last}'),
-                  trailing: DropdownButton<AppFontSize>(
-                    value: themeProvider.fontSize,
-                    items: AppFontSize.values.map((fontSize) {
-                      return DropdownMenuItem<AppFontSize>(
-                        value: fontSize,
-                        child: Text(fontSize.toString().split('.').last),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        themeProvider.setFontSize(value);
-                      }
-                    },
-                  ),
-                ),
-              ],
+            SwitchListTile(
+              title: Text(l10n.darkMode),
+              value: themeProvider.themeMode == ThemeMode.dark,
+              onChanged: (value) {
+                themeProvider.setThemeMode(
+                  value ? ThemeMode.dark : ThemeMode.light,
+                );
+              },
             ),
-            SizedBox(
-                height: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
-            _buildSection(
-              context,
-              'Data',
-              [
-                ListTile(
-                  title: const Text('Clear Cache'),
-                  subtitle: const Text('Remove temporary data'),
-                  trailing: const Icon(Icons.delete_outline),
-                  onTap: () {
-                    _showConfirmationDialog(
-                      context,
-                      'Clear Cache',
-                      'This will remove all your favorites and temporary data. This action cannot be undone.',
-                      () async {
-                        final lawProvider = Provider.of<LawProvider>(
-                          context,
-                          listen: false,
-                        );
-                        await lawProvider.clearFavorites();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                                'Cache and favorites cleared successfully'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
+            _divider(),
+            _dropdownTile<UiDensity>(
+              title: 'UI Density',
+              subtitle: 'Adjust spacing',
+              value: themeProvider.uiDensity,
+              items: UiDensity.values,
+              labelBuilder: (v) => v.name,
+              onChanged: themeProvider.setUiDensity,
+            ),
+            _divider(),
+            _dropdownTile<AppFontSize>(
+              title: 'Font Size',
+              subtitle: 'Adjust text size',
+              value: themeProvider.fontSize,
+              items: AppFontSize.values,
+              labelBuilder: (v) => v.name,
+              onChanged: themeProvider.setFontSize,
             ),
           ],
-        );
-      },
-    );
-  }
-
-  Widget _buildSection(
-      BuildContext context, String title, List<Widget> children) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final uiDensity = themeProvider.uiDensity;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
         ),
-        SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
-        Card(
-          child: Column(
-            children: children,
-          ),
+
+        _gap(uiDensity),
+
+        // ---------- Language ----------
+        _section(
+          context,
+          title: l10n.language,
+          children: [
+            _dropdownTile<AppLanguage>(
+              title: l10n.language,
+              subtitle: '',
+              value: themeProvider.language,
+              items: AppLanguage.values,
+              labelBuilder: (lang) =>
+              lang == AppLanguage.english
+                  ? 'English'
+                  : 'Bahasa Melayu',
+              onChanged: themeProvider.setLanguage,
+            ),
+          ],
+        ),
+
+        _gap(uiDensity),
+
+        // ---------- Data ----------
+        _section(
+          context,
+          title: l10n.favorites,
+          children: [
+            ListTile(
+              title: Text(l10n.favorites),
+              leading: const Icon(Icons.favorite_outline),
+              onTap: () async {
+                await context.read<LawProvider>().clearFavorites();
+                _snack(context, l10n.confirm);
+              },
+            ),
+          ],
+        ),
+
+        _gap(uiDensity),
+
+        // ---------- About ----------
+        _section(
+          context,
+          title: l10n.about,
+          children: const [
+            ListTile(
+              title: Text('App Version'),
+              subtitle: Text('1.0.0'),
+              leading: Icon(Icons.info_outline),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildThemeSettings(BuildContext context) {
-    return Card(
-      elevation: AppTheme.elevationSmall,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadiusMedium),
-      ),
-      child: Column(
-        children: [
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, _) {
-              return SwitchListTile(
-                title: const Text('Dark Mode'),
-                subtitle: const Text('Use dark theme'),
-                value: themeProvider.isDarkMode,
-                onChanged: (value) {
-                  themeProvider.setThemeMode(
-                    value ? ThemeMode.dark : ThemeMode.light,
-                  );
-                },
-                secondary: Icon(
-                  themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              );
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('System Default'),
-            subtitle: const Text('Use device theme settings'),
-            leading: Icon(
-              Icons.settings_system_daydream,
-              color: Theme.of(context).colorScheme.primary,
+  // ---------- UI Helpers ----------
+
+  Widget _section(
+      BuildContext context, {
+        required String title,
+        required List<Widget> children,
+      }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppTheme.borderRadiusMedium,
             ),
-            trailing: Consumer<ThemeProvider>(
-              builder: (context, themeProvider, _) {
-                return Radio<ThemeMode>(
-                  value: ThemeMode.system,
-                  groupValue: themeProvider.themeMode,
-                  onChanged: (ThemeMode? value) {
-                    if (value != null) {
-                      themeProvider.setThemeMode(value);
-                    }
-                  },
-                );
-              },
-            ),
-            onTap: () {
-              final themeProvider = Provider.of<ThemeProvider>(
-                context,
-                listen: false,
-              );
-              themeProvider.setThemeMode(ThemeMode.system);
-            },
           ),
-        ],
+          child: Column(children: children),
+        ),
+      ],
+    );
+  }
+
+  Widget _dropdownTile<T>({
+    required String title,
+    required String subtitle,
+    required T value,
+    required List<T> items,
+    required String Function(T) labelBuilder,
+    required ValueChanged<T> onChanged,
+  }) {
+    return ListTile(
+      title: Text(title),
+      subtitle: subtitle.isEmpty ? null : Text(subtitle),
+      trailing: DropdownButton<T>(
+        value: value,
+        underline: const SizedBox(),
+        items: items
+            .map(
+              (item) => DropdownMenuItem(
+            value: item,
+            child: Text(labelBuilder(item)),
+          ),
+        )
+            .toList(),
+        onChanged: (v) => v != null ? onChanged(v) : null,
       ),
     );
   }
 
-  Widget _buildStorageSettings(BuildContext context) {
-    return Card(
-      elevation: AppTheme.elevationSmall,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadiusMedium),
-      ),
-      child: Column(
-        children: [
-          ListTile(
-            title: const Text('Clear Search History'),
-            subtitle: const Text('Delete your recent searches'),
-            leading: Icon(
-              Icons.history,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            onTap: () {
-              _showConfirmationDialog(
-                context,
-                'Clear Search History',
-                'Are you sure you want to clear your search history?',
-                () {
-                  // Clear search history
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Search history cleared'),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Clear Favorites'),
-            subtitle: const Text('Remove all saved favorites'),
-            leading: Icon(
-              Icons.star,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            onTap: () {
-              _showConfirmationDialog(
-                context,
-                'Clear Favorites',
-                'Are you sure you want to remove all your favorites?',
-                () async {
-                  // Clear favorites
-                  final lawProvider = Provider.of<LawProvider>(
-                    context,
-                    listen: false,
-                  );
-                  await lawProvider.loadFavorites();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Favorites cleared'),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Clear App Data'),
-            subtitle: const Text('Reset all app data and preferences'),
-            leading: Icon(
-              Icons.delete_forever,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            onTap: () {
-              _showConfirmationDialog(
-                context,
-                'Clear App Data',
-                'Are you sure you want to clear all app data? This action cannot be undone.',
-                () {
-                  // Clear app data
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('App data cleared'),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _divider() => const Divider(height: 1);
 
-  Widget _buildAboutSettings(BuildContext context) {
-    return Card(
-      elevation: AppTheme.elevationSmall,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadiusMedium),
-      ),
-      child: Column(
-        children: [
-          ListTile(
-            title: const Text('App Version'),
-            subtitle: const Text('1.0.0'),
-            leading: Icon(
-              Icons.info,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Terms of Service'),
-            leading: Icon(
-              Icons.description,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            onTap: () {
-              // Navigate to Terms of Service
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Privacy Policy'),
-            leading: Icon(
-              Icons.privacy_tip,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            onTap: () {
-              // Navigate to Privacy Policy
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Open Source Licenses'),
-            leading: Icon(
-              Icons.code,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            onTap: () {
-              // Navigate to Licenses page
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _gap(UiDensity density) => SizedBox(
+    height: AppTheme.getSpacing(
+      AppTheme.baseSpacing16,
+      density,
+    ),
+  );
 
-  void _showConfirmationDialog(
-    BuildContext context,
-    String title,
-    String content,
-    VoidCallback onConfirm,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              onConfirm();
-            },
-            child: Text(
-              'Confirm',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
+  void _snack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }

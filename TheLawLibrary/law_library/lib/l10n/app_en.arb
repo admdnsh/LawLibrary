@@ -1,0 +1,28 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Law Library",
+  "settings": "Settings",
+
+  "appearance": "Appearance",
+  "darkMode": "Dark Mode",
+  "uiDensity": "UI Density",
+  "fontSize": "Font Size",
+
+  "language": "Language",
+  "selectLanguage": "Select Language",
+
+  "data": "Data & Storage",
+  "favorites": "Favorites",
+  "removeSavedLaws": "Remove all saved laws",
+  "clearCache": "Clear Cache",
+  "removeTempData": "Remove temporary data",
+
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "confirmRemoveFavorites": "Are you sure you want to remove all favorites?",
+  "confirmClearCache": "Are you sure you want to clear cached data?",
+
+  "about": "About",
+  "appVersion": "App Version"
+}

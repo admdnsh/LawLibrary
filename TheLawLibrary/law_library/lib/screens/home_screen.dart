@@ -15,7 +15,6 @@ import 'package:law_library/widgets/category_filter.dart';
 import 'package:law_library/widgets/law_list.dart';
 import 'package:law_library/widgets/search_bar.dart';
 import 'package:law_library/theme/app_theme.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:law_library/services/api_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,192 +26,65 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
-  final ScrollController _mainScrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   int _currentIndex = 0;
   Timer? _debounce;
   Future<int>? _totalLawsFuture;
 
+  late final List<Widget> _screens;
+
   @override
   void initState() {
     super.initState();
-    _refreshData();
     _totalLawsFuture = ApiService().getTotalLawCount();
+    _refreshData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showGuideDialog());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showGuideDialog();
-    });
+    _screens = const [
+      SizedBox(), // Placeholder for Home
+      FavoritesScreen(),
+      PaymentScreen(),
+      AboutScreen(),
+      SettingsScreen(),
+    ];
   }
 
   Future<void> _refreshData() async {
-    final lawProvider = Provider.of<LawProvider>(context, listen: false);
-    await lawProvider.fetchLaws(refresh: true);
+    await Provider.of<LawProvider>(context, listen: false).fetchLaws(refresh: true);
   }
 
-  void _handleSearch(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
+  void _debouncedSearch(String query) {
+    _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      final lawProvider = Provider.of<LawProvider>(context, listen: false);
-      lawProvider.setSearchQuery(query.isNotEmpty ? query : null);
-      lawProvider.fetchLaws(refresh: true);
+      final provider = Provider.of<LawProvider>(context, listen: false);
+      provider.setSearchQuery(query.isNotEmpty ? query : null);
+      provider.fetchLaws(refresh: true);
     });
   }
 
   void _handleCategoryChange(String? category) {
-    final lawProvider = Provider.of<LawProvider>(context, listen: false);
-    lawProvider.setFilterCategory(category);
-    lawProvider.fetchLaws(refresh: true);
+    final provider = Provider.of<LawProvider>(context, listen: false);
+    provider.setFilterCategory(category);
+    provider.fetchLaws(refresh: true);
   }
 
-  void _onTabChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
+  double _spacing(double base) => AppTheme.getSpacing(base, context.watch<ThemeProvider>().uiDensity);
 
-  Widget _buildBody() {
-    switch (_currentIndex) {
-      case 1:
-        return const FavoritesScreen();
-      case 2:
-        return const PaymentScreen();
-      case 3:
-        return const AboutScreen();
-      case 4:
-        return const SettingsScreen();
-      default:
-        return _buildHomeBody();
-    }
-  }
-
-  Widget _buildHomeBody() {
-    final theme = context.watch<ThemeProvider>();
-    final uiDensity = theme.uiDensity;
-
-    return CustomScrollView(
-      controller: _mainScrollController,
-      slivers: [
-        // --- Header ---
-        SliverToBoxAdapter(
-          child: _buildHomeHeader().animate().fadeIn(duration: 400.ms),
-        ),
-
-        // --- Search Bar ---
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
-            child: AppSearchBar(
-              controller: _searchController,
-              onSearch: _handleSearch,
-            ),
-          ).animate().fadeIn(duration: 400.ms).moveY(begin: -10, end: 0),
-        ),
-
-        // --- Search Results Info ---
-        SliverToBoxAdapter(
-          child: Consumer<LawProvider>(
-            builder: (context, lawProvider, _) {
-              if (lawProvider.searchQuery != null && lawProvider.searchQuery!.isNotEmpty) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-                    vertical: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search, size: 16, color: Theme.of(context).colorScheme.secondary),
-                      SizedBox(width: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
-                      Expanded(
-                        child: Text(
-                          'Found ${lawProvider.laws.length} ${lawProvider.laws.length == 1 ? 'entry' : 'entries'} for "${lawProvider.searchQuery}"',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.1, end: 0),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
-
-        // --- Total Laws Count ---
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-              vertical: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity),
-            ),
-            child: FutureBuilder<int>(
-              future: _totalLawsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}',
-                      style: TextStyle(color: Theme.of(context).colorScheme.error));
-                } else if (snapshot.hasData) {
-                  return Text(
-                    'Total Laws: ${snapshot.data}',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    textAlign: TextAlign.left,
-                  );
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
-            ),
-          ),
-        ),
-
-        // --- Category Filter ---
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-            ),
-            child: Consumer<LawProvider>(
-              builder: (context, lawProvider, _) {
-                return CategoryFilter(
-                  categories: lawProvider.categories,
-                  selectedCategory: lawProvider.selectedCategory,
-                  onCategoryChanged: _handleCategoryChange,
-                );
-              },
-            ),
-          ).animate().fadeIn(duration: 400.ms).moveY(begin: -10, end: 0),
-        ),
-
-        // --- Law List ---
-        SliverFillRemaining(
-          child: Padding(
-            padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
-            child: RefreshIndicator(
-              onRefresh: _refreshData,
-              child: LawList(scrollController: _mainScrollController),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHomeHeader() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
+  // ------------------------- Sections -------------------------
+  Widget _buildHeader() => Card(
+    elevation: AppTheme.elevationMedium,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium))),
+    margin: EdgeInsets.all(_spacing(16)),
+    child: Padding(
+      padding: EdgeInsets.all(_spacing(16)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset('assets/logo.png', width: 80, height: 80, fit: BoxFit.contain),
+            child: Image.asset('assets/logo.png', width: 64, height: 64, fit: BoxFit.contain),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: _spacing(16)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text('JSKLL Law Library', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                 SizedBox(height: 4),
                 Text(
-                  'A modern law library app for searching, browsing, and managing legal information efficiently.',
+                  'Search, browse, and manage legal information easily.',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ],
@@ -228,92 +100,145 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+
+  Widget _buildSearchBar() => Padding(
+    padding: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
+    child: AppSearchBar(controller: _searchController, onSearch: _debouncedSearch),
+  );
+
+  Widget _buildSearchInfo() => Consumer<LawProvider>(
+    builder: (context, provider, _) {
+      if (provider.searchQuery?.isNotEmpty ?? false) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(4)),
+          child: Text(
+            'Found ${provider.laws.length} ${provider.laws.length == 1 ? 'entry' : 'entries'} for "${provider.searchQuery}"',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.secondary),
+          ),
+        );
+      }
+      return const SizedBox.shrink();
+    },
+  );
+
+  Widget _buildTotalLawsCount() => Card(
+    elevation: AppTheme.elevationSmall,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium))),
+    margin: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
+    child: Padding(
+      padding: EdgeInsets.all(_spacing(16)),
+      child: FutureBuilder<int>(
+        future: _totalLawsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) return Text('Error: ${snapshot.error}', style: TextStyle(color: Theme.of(context).colorScheme.error));
+          if (snapshot.hasData) {
+            return Text(
+              'Total Laws: ${snapshot.data}',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    ),
+  );
+
+  Widget _buildCategoryFilter() => Card(
+    elevation: AppTheme.elevationSmall,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium))),
+    margin: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
+    child: Padding(
+      padding: EdgeInsets.all(_spacing(16)),
+      child: Consumer<LawProvider>(
+        builder: (context, provider, _) {
+          return CategoryFilter(
+            categories: provider.categories,
+            selectedCategory: provider.selectedCategory,
+            onCategoryChanged: _handleCategoryChange,
+          );
+        },
+      ),
+    ),
+  );
+
+  Widget _buildLawList() => Padding(
+    padding: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
+    child: RefreshIndicator(
+      onRefresh: _refreshData,
+      child: LawList(scrollController: _scrollController),
+    ),
+  );
+
+  Widget _buildHomeBody() => CustomScrollView(
+    controller: _scrollController,
+    slivers: [
+      SliverToBoxAdapter(child: _buildHeader()),
+      SliverToBoxAdapter(child: _buildSearchBar()),
+      SliverToBoxAdapter(child: _buildSearchInfo()),
+      SliverToBoxAdapter(child: _buildTotalLawsCount()),
+      SliverToBoxAdapter(child: _buildCategoryFilter()),
+      SliverFillRemaining(child: _buildLawList()),
+    ],
+  );
 
   void _showGuideDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Welcome to Law Library!'),
+      builder: (_) => AlertDialog(
+        title: const Text('Welcome!'),
         content: SingleChildScrollView(
           child: ListBody(
             children: const [
               Text("Here's how to use the app:"),
               SizedBox(height: 12),
-              Text('• Use the search bar at the top to find laws by keywords.'),
-              Text('• Filter laws by category using the dropdown below the search bar.'),
-              Text('• Tap a law to view its details.'),
-              Text('• Tap the star icon to add or remove a law from your favorites.'),
-              Text('• Use the bottom navigation to switch between Home, Favorites, About, and Settings.'),
-              Text('• Admins can access the Admin Panel from the top right menu.'),
+              Text('• Use the search bar at the top to find laws.'),
+              Text('• Filter by category below the search bar.'),
+              Text('• Tap a law to view details.'),
+              Text('• Tap the star icon to add/remove favorites.'),
+              Text('• Use the bottom navigation to switch screens.'),
+              Text('• Admins can access the Admin Panel from top-right menu.'),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it!'),
-          ),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Got it!'))],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = context.watch<AuthProvider>();
     final isAdmin = authProvider.isAdmin;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _currentIndex == 0
-              ? 'Law Library'
-              : _currentIndex == 1
-              ? 'Favorites'
-              : _currentIndex == 2
-              ? 'Payment'
-              : _currentIndex == 3
-              ? 'About'
-              : 'Settings',
-        ),
+        title: Text(['Law Library', 'Favorites', 'Payment', 'About', 'Settings'][_currentIndex]),
         actions: [
           if (authProvider.isLoggedIn) ...[
             if (isAdmin)
               IconButton(
                 icon: const Icon(Icons.admin_panel_settings),
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => const AdminPanelScreen(),
-                  ));
-                },
-                tooltip: 'Admin Panel',
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())),
               ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () async {
                 await authProvider.logout();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Logged out successfully')),
-                );
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out successfully')));
               },
-              tooltip: 'Logout',
             ),
           ] else
             IconButton(
               icon: const Icon(Icons.login),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-              tooltip: 'Login',
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
             ),
         ],
       ),
-      body: _buildBody(),
-      bottomNavigationBar: AppBottomNavigation(currentIndex: _currentIndex, onTap: _onTabChanged),
+      body: _currentIndex == 0 ? _buildHomeBody() : _screens[_currentIndex],
+      bottomNavigationBar: AppBottomNavigation(currentIndex: _currentIndex, onTap: (index) => setState(() => _currentIndex = index)),
     );
   }
 

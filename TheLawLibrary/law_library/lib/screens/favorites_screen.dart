@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:law_library/providers/law_provider.dart';
-import 'package:law_library/widgets/law_list.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/widgets/search_bar.dart';
 import 'package:law_library/models/law.dart';

@@ -95,7 +95,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
                     fillColor:
-                    Theme.of(context).colorScheme.surfaceVariant,
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         AppTheme.getSpacing(

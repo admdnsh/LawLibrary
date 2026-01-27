@@ -1,6 +1,6 @@
 // lib/models/law.dart
 
-import 'package:flutter/material.dart'; // Ensure this is present if needed elsewhere
+// Ensure this is present if needed elsewhere
 
 class Law {
   final String chapter;

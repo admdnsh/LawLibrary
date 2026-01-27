@@ -1,0 +1,28 @@
+{
+  "@@locale": "ms",
+
+  "appTitle": "Perpustakaan Undang-undang",
+  "settings": "Tetapan",
+
+  "appearance": "Paparan",
+  "darkMode": "Mod Gelap",
+  "uiDensity": "Ketumpatan UI",
+  "fontSize": "Saiz Fon",
+
+  "language": "Bahasa",
+  "selectLanguage": "Pilih Bahasa",
+
+  "data": "Data & Storan",
+  "favorites": "Kegemaran",
+  "removeSavedLaws": "Padam semua undang-undang disimpan",
+  "clearCache": "Kosongkan Cache",
+  "removeTempData": "Padam data sementara",
+
+  "confirm": "Sahkan",
+  "cancel": "Batal",
+  "confirmRemoveFavorites": "Adakah anda pasti mahu memadam semua kegemaran?",
+  "confirmClearCache": "Adakah anda pasti mahu mengosongkan cache?",
+
+  "about": "Mengenai",
+  "appVersion": "Versi Aplikasi"
+}
