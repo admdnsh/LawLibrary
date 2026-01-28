@@ -180,7 +180,7 @@ class LawProvider extends ChangeNotifier {
     try {
       // Pass both the Law object (containing the new chapter) and the originalChapter
       final result =
-          await _apiService.updateLaw(law, originalChapter: originalChapter);
+      await _apiService.updateLaw(law, originalChapter: originalChapter);
       if (result) {
         // Refresh laws to include the update
         await fetchLaws(refresh: true);

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:law_library/l10n/app_localizations.dart';
@@ -14,11 +17,25 @@ import 'package:law_library/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // -----------------------------
+  // Desktop database FFI setup
+  // -----------------------------
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
+  // -----------------------------
+  // Lock device orientation
+  // -----------------------------
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
+  // -----------------------------
+  // Run app with MultiProvider
+  // -----------------------------
   runApp(
     MultiProvider(
       providers: [
@@ -42,8 +59,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Law Library',
 
-      // 🌍 LANGUAGE SUPPORT
-      locale: themeProvider.locale,
+      // -----------------------------
+      // Localization
+      // -----------------------------
+      locale: themeProvider.locale, // current locale from provider
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -52,11 +71,16 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      // 🎨 THEME
+      // -----------------------------
+      // Theme
+      // -----------------------------
       theme: AppTheme.lightTheme(themeProvider),
       darkTheme: AppTheme.darkTheme(themeProvider),
       themeMode: themeProvider.themeMode,
-      // 🚀 ENTRY
+
+      // -----------------------------
+      // Entry point
+      // -----------------------------
       home: const SplashScreen(),
     );
   }

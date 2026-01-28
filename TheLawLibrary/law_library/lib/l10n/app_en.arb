@@ -8,12 +8,15 @@
   "darkMode": "Dark Mode",
   "uiDensity": "UI Density",
   "fontSize": "Font Size",
+  "adjustSpacing": "Adjust spacing",
+  "adjustFontSize": "Adjust text size"
 
-  "language": "Language",
+"language": "Language",
   "selectLanguage": "Select Language",
 
   "data": "Data & Storage",
   "favorites": "Favorites",
+  "clearFavorites": "Clear Favorites",
   "removeSavedLaws": "Remove all saved laws",
   "clearCache": "Clear Cache",
   "removeTempData": "Remove temporary data",

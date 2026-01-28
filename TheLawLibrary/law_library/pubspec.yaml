@@ -1,10 +1,10 @@
 name: law_library
 description: A modern law library app.
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -15,6 +15,10 @@ dependencies:
     sdk: flutter
   intl: ^0.20.2
 
+  #Excel Reader
+  csv: ^6.0.0
+  excel: ^4.0.6
+
   # 🎨 UI & State
   cupertino_icons: ^1.0.8
   provider: ^6.1.5
@@ -24,15 +28,15 @@ dependencies:
   dropdown_search: ^6.0.2
   flutter_animate: ^4.2.3
 
-  # 💾 Storage & Data
+  # 💾 Local Storage (Mobile / Desktop)
+  sqflite: ^2.4.1
+  sqflite_common_ffi: ^2.3.3
+  path_provider: ^2.1.5
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^10.0.0
-  path_provider: ^2.1.5
-  sqflite: ^2.4.1
 
-  # 🌐 Network & Backend
+  # 🌐 Network
   http: ^1.4.0
-  mysql1: ^0.20.0
   crypto: ^3.0.6
 
   # 🖼 Media
@@ -49,12 +53,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # Enables gen-l10n
   generate: true
 
   assets:
     - assets/
+    - assets/laws.csv
 
   fonts:
     - family: SF Pro

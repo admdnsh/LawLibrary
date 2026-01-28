@@ -21,7 +21,7 @@ class SettingsScreen extends StatelessWidget {
       children: [
         // ---------- Appearance ----------
         _section(
-          context,
+          context: context,
           title: l10n.appearance,
           children: [
             SwitchListTile(
@@ -35,20 +35,22 @@ class SettingsScreen extends StatelessWidget {
             ),
             _divider(),
             _dropdownTile<UiDensity>(
-              title: 'UI Density',
-              subtitle: 'Adjust spacing',
+              context: context,
+              title: l10n.uiDensity,
+              subtitle: l10n.adjustSpacing,
               value: themeProvider.uiDensity,
               items: UiDensity.values,
-              labelBuilder: (v) => v.name,
+              labelBuilder: (v) => v.name.capitalize(),
               onChanged: themeProvider.setUiDensity,
             ),
             _divider(),
             _dropdownTile<AppFontSize>(
-              title: 'Font Size',
-              subtitle: 'Adjust text size',
+              context: context,
+              title: l10n.fontSize,
+              subtitle: l10n.adjustFontSize,
               value: themeProvider.fontSize,
               items: AppFontSize.values,
-              labelBuilder: (v) => v.name,
+              labelBuilder: (v) => v.name.capitalize(),
               onChanged: themeProvider.setFontSize,
             ),
           ],
@@ -58,18 +60,16 @@ class SettingsScreen extends StatelessWidget {
 
         // ---------- Language ----------
         _section(
-          context,
+          context: context,
           title: l10n.language,
           children: [
             _dropdownTile<AppLanguage>(
+              context: context,
               title: l10n.language,
-              subtitle: '',
               value: themeProvider.language,
               items: AppLanguage.values,
               labelBuilder: (lang) =>
-              lang == AppLanguage.english
-                  ? 'English'
-                  : 'Bahasa Melayu',
+              lang == AppLanguage.english ? 'English' : 'Bahasa Melayu',
               onChanged: themeProvider.setLanguage,
             ),
           ],
@@ -79,15 +79,35 @@ class SettingsScreen extends StatelessWidget {
 
         // ---------- Data ----------
         _section(
-          context,
+          context: context,
           title: l10n.favorites,
           children: [
             ListTile(
-              title: Text(l10n.favorites),
               leading: const Icon(Icons.favorite_outline),
+              title: Text(l10n.clearFavorites),
               onTap: () async {
-                await context.read<LawProvider>().clearFavorites();
-                _snack(context, l10n.confirm);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(l10n.clearFavorites),
+                    content: Text(l10n.confirmRemoveFavorites),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text(l10n.cancel),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text(l10n.confirm),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm == true) {
+                  await context.read<LawProvider>().clearFavorites();
+                  _snack(context, l10n.confirm);
+                }
               },
             ),
           ],
@@ -97,13 +117,13 @@ class SettingsScreen extends StatelessWidget {
 
         // ---------- About ----------
         _section(
-          context,
+          context: context,
           title: l10n.about,
-          children: const [
+          children: [
             ListTile(
-              title: Text('App Version'),
-              subtitle: Text('1.0.0'),
-              leading: Icon(Icons.info_outline),
+              leading: const Icon(Icons.info_outline),
+              title: Text(l10n.appVersion),
+              subtitle: const Text('2.0'),
             ),
           ],
         ),
@@ -113,11 +133,11 @@ class SettingsScreen extends StatelessWidget {
 
   // ---------- UI Helpers ----------
 
-  Widget _section(
-      BuildContext context, {
-        required String title,
-        required List<Widget> children,
-      }) {
+  Widget _section({
+    required BuildContext context,
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -131,9 +151,7 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Card(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              AppTheme.borderRadiusMedium,
-            ),
+            borderRadius: BorderRadius.circular(AppTheme.borderRadiusMedium),
           ),
           child: Column(children: children),
         ),
@@ -142,8 +160,9 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _dropdownTile<T>({
+    required BuildContext context,
     required String title,
-    required String subtitle,
+    String? subtitle,
     required T value,
     required List<T> items,
     required String Function(T) labelBuilder,
@@ -151,13 +170,13 @@ class SettingsScreen extends StatelessWidget {
   }) {
     return ListTile(
       title: Text(title),
-      subtitle: subtitle.isEmpty ? null : Text(subtitle),
+      subtitle: subtitle == null || subtitle.isEmpty ? null : Text(subtitle),
       trailing: DropdownButton<T>(
         value: value,
         underline: const SizedBox(),
         items: items
             .map(
-              (item) => DropdownMenuItem(
+              (item) => DropdownMenuItem<T>(
             value: item,
             child: Text(labelBuilder(item)),
           ),
@@ -171,14 +190,16 @@ class SettingsScreen extends StatelessWidget {
   Widget _divider() => const Divider(height: 1);
 
   Widget _gap(UiDensity density) => SizedBox(
-    height: AppTheme.getSpacing(
-      AppTheme.baseSpacing16,
-      density,
-    ),
+    height: AppTheme.getSpacing(AppTheme.baseSpacing16, density),
   );
 
   void _snack(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
+}
+
+/// Simple String extension to capitalize enum names
+extension StringCasingExtension on String {
+  String capitalize() =>
+      isEmpty ? '' : '${this[0].toUpperCase()}${substring(1)}';
 }

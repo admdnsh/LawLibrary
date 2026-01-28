@@ -8,12 +8,15 @@
   "darkMode": "Mod Gelap",
   "uiDensity": "Ketumpatan UI",
   "fontSize": "Saiz Fon",
+  "adjustSpacing": "Laraskan Jarak",
+  "adjustFontSize": "Laraskan saiz teks",
 
   "language": "Bahasa",
   "selectLanguage": "Pilih Bahasa",
 
   "data": "Data & Storan",
   "favorites": "Kegemaran",
+  "clearFavorites": "Kosongkan Kegemaran",
   "removeSavedLaws": "Padam semua undang-undang disimpan",
   "clearCache": "Kosongkan Cache",
   "removeTempData": "Padam data sementara",
