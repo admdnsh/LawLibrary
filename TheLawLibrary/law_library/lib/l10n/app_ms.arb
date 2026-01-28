@@ -27,5 +27,18 @@
   "confirmClearCache": "Adakah anda pasti mahu mengosongkan cache?",
 
   "about": "Mengenai",
-  "appVersion": "Versi Aplikasi"
+  "appVersion": "Versi Aplikasi",
+
+  "paymentInformation": "Maklumat Pembayaran",
+  "whereToPay": "Tempat Membuat Pembayaran",
+  "paymentOptionsText": "Untuk membuat pembayaran, anda mempunyai dua pilihan mudah:",
+  "onlinePayment": "1. Pembayaran Dalam Talian",
+  "onlinePaymentDescription": "Anda boleh menjelaskan denda atau bayaran dengan cepat dan selamat melalui portal pembayaran dalam talian rasmi kami. Kaedah ini tersedia 24/7, membolehkan anda membayar dari mana-mana menggunakan komputer atau peranti mudah alih.",
+  "inPersonPayment": "2. Pembayaran Secara Bersemuka di Cawangan JSKLL",
+  "inPersonPaymentDescription": "Jika anda lebih suka membuat pembayaran secara bersemuka, anda boleh mengunjungi cawangan JSKLL tertentu. Cawangan ini boleh memproses pembayaran semasa waktu operasi biasa.",
+  "importantNote": "Nota Penting",
+  "importantNoteDescription": "Pastikan anda membawa dokumentasi yang diperlukan (contohnya, notis kesalahan, pengenalan) semasa membuat pembayaran di cawangan.",
+  "onlinePaymentGuide": "Panduan Pembayaran Dalam Talian",
+  "videoReference": "Untuk maklumat lanjut tentang pembayaran dalam talian, sila rujuk video ini:"
+
 }

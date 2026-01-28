@@ -27,5 +27,18 @@
   "confirmClearCache": "Are you sure you want to clear cached data?",
 
   "about": "About",
-  "appVersion": "App Version"
+  "appVersion": "App Version",
+
+
+  "paymentInformation": "Payment Information",
+  "whereToPay": "Where to Make Your Payment",
+  "paymentOptionsText": "To make your payment, you have two convenient options:",
+  "onlinePayment": "1. Online Payment",
+  "onlinePaymentDescription": "You can settle your fines or fees quickly and securely through our official online payment portal. This method is available 24/7, allowing you to pay from anywhere using a computer or mobile device.",
+  "inPersonPayment": "2. In-Person Payment at JSKLL Branches",
+  "inPersonPaymentDescription": "If you prefer to make your payment in person, you may visit selected JSKLL branches located at specific locations. These branches are equipped to process payments during their regular operating hours.",
+  "importantNote": "Important Note",
+  "importantNoteDescription": "Please ensure you bring the necessary documentation (e.g., offence notice, identification) when making payments at a branch.",
+  "onlinePaymentGuide": "Online Payment Guide",
+  "videoReference": "For more information about online payments, please refer to this video:"
 }
