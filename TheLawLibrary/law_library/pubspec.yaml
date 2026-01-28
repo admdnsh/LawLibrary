@@ -58,6 +58,7 @@ flutter:
   assets:
     - assets/
     - assets/laws.csv
+    - assets/payment.mp4
 
   fonts:
     - family: SF Pro
