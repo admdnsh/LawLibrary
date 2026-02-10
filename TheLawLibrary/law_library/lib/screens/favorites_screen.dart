@@ -31,7 +31,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     });
   }
 
-  List<Law> _filterFavorites(List<Law> favorites) {
+  // Filter favorites based on search
+  List<Law> _filterFavorites(List<Law> laws) {
+    final favorites = laws.where((law) => law.isFavorite).toList();
     if (_searchQuery.isEmpty) return favorites;
 
     final searchLower = _searchQuery.toLowerCase();
@@ -46,36 +48,33 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final themeProvider = context.watch<ThemeProvider>();
+    final uiDensity = themeProvider.uiDensity;
 
     return Consumer<LawProvider>(
       builder: (context, lawProvider, _) {
-        final themeProvider = context.watch<ThemeProvider>();
-        final uiDensity = themeProvider.uiDensity;
+        final filteredFavorites = _filterFavorites(lawProvider.laws);
 
-        final filteredFavorites = _filterFavorites(lawProvider.favorites);
-
-        // ---------------- Empty Favorites ----------------
-        if (lawProvider.favorites.isEmpty) {
+        if (filteredFavorites.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.favorite_border,
+                  _searchQuery.isEmpty ? Icons.favorite_border : Icons.search_off,
                   size: 64,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .secondary
-                      .withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
                 ),
                 SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
                 Text(
-                  l10n.noFavoritesTitle,
+                  _searchQuery.isEmpty ? l10n.noFavoritesTitle : l10n.noSearchResultsTitle,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
                 Text(
-                  l10n.noFavoritesDescription,
+                  _searchQuery.isEmpty
+                      ? l10n.noFavoritesDescription
+                      : l10n.noSearchResultsDescription,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
@@ -90,9 +89,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           children: [
             // ---------------- Search Bar ----------------
             Padding(
-              padding: EdgeInsets.all(
-                AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-              ),
+              padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
               child: AppSearchBar(
                 controller: _searchController,
                 onSearch: _handleSearch,
@@ -103,24 +100,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             // ---------------- Search Result Info ----------------
             if (_searchQuery.isNotEmpty)
               Padding(
-                padding: EdgeInsets.only(
-                  left: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-                  right: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-                  bottom: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
+                  vertical: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.search,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
+                    Icon(Icons.search, size: 16, color: Theme.of(context).colorScheme.secondary),
                     SizedBox(width: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
                     Text(
-                      l10n.favoritesSearchResult(
-                        filteredFavorites.length,
-                        _searchQuery,
-                      ),
+                      l10n.favoritesSearchResult(filteredFavorites.length, _searchQuery),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.secondary,
                       ),
@@ -131,39 +120,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
             // ---------------- Favorites List ----------------
             Expanded(
-              child: filteredFavorites.isEmpty
-                  ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.search_off,
-                      size: 64,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.5),
-                    ),
-                    SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
-                    Text(
-                      l10n.noSearchResultsTitle,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
-                    Text(
-                      l10n.noSearchResultsDescription,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              )
-                  : ListView.builder(
-                padding: EdgeInsets.all(
-                  AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-                ),
+              child: ListView.builder(
+                padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
                 itemCount: filteredFavorites.length,
                 itemBuilder: (context, index) {
                   final law = filteredFavorites[index];

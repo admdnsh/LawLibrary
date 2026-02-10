@@ -41,7 +41,11 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => LawProvider()),
+        ChangeNotifierProvider(create: (_) {
+          final provider = LawProvider();
+          provider.initialize(); // Fetch laws, categories & favorites on startup
+          return provider;
+        }),
       ],
       child: const MyApp(),
     ),

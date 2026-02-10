@@ -1,7 +1,7 @@
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:law_library/models/law.dart';
 
 class DatabaseService {
@@ -45,25 +45,13 @@ class DatabaseService {
     ''');
   }
 
-  // Favorites operations
+  // ------------------- Favorites CRUD -------------------
+
   Future<List<Law>> getFavorites() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('favorites');
 
-    return List.generate(maps.length, (i) {
-      return Law(
-        chapter: maps[i]['chapter'],
-        category: maps[i]['category'],
-        title: maps[i]['title'],
-        description: maps[i]['description'],
-        compoundFine: maps[i]['compound_fine'],
-        secondCompoundFine: maps[i]['second_compound_fine'],
-        thirdCompoundFine: maps[i]['third_compound_fine'],
-        fourthCompoundFine: maps[i]['fourth_compound_fine'],
-        fifthCompoundFine: maps[i]['fifth_compound_fine'],
-        isFavorite: true,
-      );
-    });
+    return maps.map((map) => Law.fromMap(_dbMapToModelMap(map))).toList();
   }
 
   Future<bool> isFavorite(String chapter) async {
@@ -74,33 +62,20 @@ class DatabaseService {
       whereArgs: [chapter],
       limit: 1,
     );
-
     return result.isNotEmpty;
   }
 
   Future<void> addFavorite(Law law) async {
     final db = await database;
-
     await db.insert(
       'favorites',
-      {
-        'chapter': law.chapter,
-        'category': law.category,
-        'title': law.title,
-        'description': law.description,
-        'compound_fine': law.compoundFine,
-        'second_compound_fine': law.secondCompoundFine,
-        'third_compound_fine': law.thirdCompoundFine,
-        'fourth_compound_fine': law.fourthCompoundFine,
-        'fifth_compound_fine': law.fifthCompoundFine,
-      },
+      _modelToDbMap(law),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
   Future<void> removeFavorite(String chapter) async {
     final db = await database;
-
     await db.delete(
       'favorites',
       where: 'chapter = ?',
@@ -108,20 +83,22 @@ class DatabaseService {
     );
   }
 
-  // Clear favorites
   Future<void> clearFavorites() async {
     final db = await database;
     await db.delete('favorites');
   }
 
-  Future<List<Law>> searchLaws({String? query, String? category}) async {
+  // ------------------- Search & Filtering -------------------
+  Future<List<Law>> searchFavorites({String? query, String? category}) async {
     final db = await database;
+
     String whereClause = '';
     List<String> whereArgs = [];
 
     if (query != null && query.isNotEmpty) {
-      whereClause += '(chapter LIKE ? OR title LIKE ? OR description LIKE ?)';
-      whereArgs.addAll(['%$query%', '%$query%', '%$query%']);
+      whereClause +=
+      '(chapter LIKE ? OR title LIKE ? OR description LIKE ? OR category LIKE ?)';
+      whereArgs.addAll(['%$query%', '%$query%', '%$query%', '%$query%']);
     }
 
     if (category != null && category.isNotEmpty) {
@@ -136,6 +113,39 @@ class DatabaseService {
       whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
     );
 
-    return List.generate(maps.length, (i) => Law.fromMap(maps[i]));
+    return maps.map((map) => Law.fromMap(_dbMapToModelMap(map))).toList();
+  }
+
+  // ------------------- Helpers -------------------
+
+  // Convert model to DB map
+  Map<String, dynamic> _modelToDbMap(Law law) {
+    return {
+      'chapter': law.chapter,
+      'category': law.category,
+      'title': law.title,
+      'description': law.description,
+      'compound_fine': law.compoundFine,
+      'second_compound_fine': law.secondCompoundFine,
+      'third_compound_fine': law.thirdCompoundFine,
+      'fourth_compound_fine': law.fourthCompoundFine,
+      'fifth_compound_fine': law.fifthCompoundFine,
+    };
+  }
+
+  // Convert DB map to model map (matches Law.fromMap keys)
+  Map<String, dynamic> _dbMapToModelMap(Map<String, dynamic> map) {
+    return {
+      'Chapter': map['chapter'],
+      'Category': map['category'],
+      'Title': map['title'],
+      'Description': map['description'],
+      'Compound_Fine': map['compound_fine'],
+      'Second_Compound_Fine': map['second_compound_fine'],
+      'Third_Compound_Fine': map['third_compound_fine'],
+      'Fourth_Compound_Fine': map['fourth_compound_fine'],
+      'Fifth_Compound_Fine': map['fifth_compound_fine'],
+      'isFavorite': 1,
+    };
   }
 }

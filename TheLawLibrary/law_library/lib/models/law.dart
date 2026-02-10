@@ -1,7 +1,5 @@
 // lib/models/law.dart
 
-// Ensure this is present if needed elsewhere
-
 class Law {
   final String chapter;
   final String category;
@@ -29,6 +27,7 @@ class Law {
     this.isFavorite = false,
   });
 
+  // --- JSON Parsing (from API) ---
   factory Law.fromJson(Map<String, dynamic> json) {
     return Law(
       chapter: json['Chapter'] as String,
@@ -41,26 +40,6 @@ class Law {
       fourthCompoundFine: json['Fourth_Compound_Fine']?.toString(),
       fifthCompoundFine: json['Fifth_Compound_Fine']?.toString(),
       isFavorite: json['isFavorite'] == 1,
-    );
-  }
-
-  // ADD THIS NEW factory Law.fromMap constructor
-  factory Law.fromMap(Map<String, dynamic> map) {
-    return Law(
-      // Assuming map keys are similar to JSON keys from your API for consistency.
-      // Adjust map['Key'] if your database column names are different (e.g., all lowercase).
-      chapter: map['Chapter'] as String,
-      category: map['Category'] as String,
-      title: map['Title'] as String,
-      description: map['Description'] as String,
-      compoundFine:
-          map['Compound_Fine']?.toString(), // Safely convert to String
-      secondCompoundFine: map['Second_Compound_Fine']?.toString(),
-      thirdCompoundFine: map['Third_Compound_Fine']?.toString(),
-      fourthCompoundFine: map['Fourth_Compound_Fine']?.toString(),
-      fifthCompoundFine: map['Fifth_Compound_Fine']?.toString(),
-      isFavorite: map['isFavorite'] ==
-          1, // Or map['is_favorite'] == 1 if column name is different
     );
   }
 
@@ -79,6 +58,38 @@ class Law {
     };
   }
 
+  // --- Database (Sqflite) Mapping ---
+  factory Law.fromMap(Map<String, dynamic> map) {
+    return Law(
+      chapter: map['chapter'] as String,
+      category: map['category'] as String,
+      title: map['title'] as String,
+      description: map['description'] as String,
+      compoundFine: map['compound_fine']?.toString(),
+      secondCompoundFine: map['second_compound_fine']?.toString(),
+      thirdCompoundFine: map['third_compound_fine']?.toString(),
+      fourthCompoundFine: map['fourth_compound_fine']?.toString(),
+      fifthCompoundFine: map['fifth_compound_fine']?.toString(),
+      isFavorite: true, // everything in favorites table is favorite
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'chapter': chapter,
+      'category': category,
+      'title': title,
+      'description': description,
+      'compound_fine': compoundFine,
+      'second_compound_fine': secondCompoundFine,
+      'third_compound_fine': thirdCompoundFine,
+      'fourth_compound_fine': fourthCompoundFine,
+      'fifth_compound_fine': fifthCompoundFine,
+      // isFavorite is implicit in favorites table, so not included
+    };
+  }
+
+  // --- Copy method for immutability ---
   Law copyWith({
     String? chapter,
     String? category,

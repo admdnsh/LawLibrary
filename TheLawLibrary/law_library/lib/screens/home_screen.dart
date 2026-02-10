@@ -16,7 +16,6 @@ import 'package:law_library/widgets/law_list.dart';
 import 'package:law_library/widgets/search_bar.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/services/api_service.dart';
-import 'package:law_library/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,7 +27,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-
   int _currentIndex = 0;
   Timer? _debounce;
   Future<int>? _totalLawsFuture;
@@ -43,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _showGuideDialog());
 
     _screens = const [
-      SizedBox(), // Home placeholder
+      SizedBox(), // Placeholder for Home
       FavoritesScreen(),
       PaymentScreen(),
       AboutScreen(),
@@ -52,173 +50,110 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refreshData() async {
-    await context.read<LawProvider>().fetchLaws(refresh: true);
+    await Provider.of<LawProvider>(context, listen: false).fetchLaws(refresh: true);
   }
 
   void _debouncedSearch(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      final provider = context.read<LawProvider>();
+      final provider = Provider.of<LawProvider>(context, listen: false);
       provider.setSearchQuery(query.isNotEmpty ? query : null);
       provider.fetchLaws(refresh: true);
     });
   }
 
   void _handleCategoryChange(String? category) {
-    final provider = context.read<LawProvider>();
+    final provider = Provider.of<LawProvider>(context, listen: false);
     provider.setFilterCategory(category);
     provider.fetchLaws(refresh: true);
   }
 
-  double _spacing(double base) =>
-      AppTheme.getSpacing(base, context.watch<ThemeProvider>().uiDensity);
+  double _spacing(double base) => AppTheme.getSpacing(base, context.watch<ThemeProvider>().uiDensity);
 
-  // ------------------------- UI SECTIONS -------------------------
-
-  Widget _buildHeader(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Card(
-      elevation: AppTheme.elevationMedium,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium)),
-      ),
-      margin: EdgeInsets.all(_spacing(16)),
-      child: Padding(
-        padding: EdgeInsets.all(_spacing(16)),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/logo.png',
-                width: 64,
-                height: 64,
-                fit: BoxFit.contain,
-              ),
+  // ------------------------- Sections -------------------------
+  Widget _buildHeader() => Card(
+    elevation: AppTheme.elevationMedium,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium))),
+    margin: EdgeInsets.all(_spacing(16)),
+    child: Padding(
+      padding: EdgeInsets.all(_spacing(16)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset('assets/logo.png', width: 64, height: 64, fit: BoxFit.contain),
+          ),
+          SizedBox(width: _spacing(16)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text('Road Offense Act Library', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Text(
+                  'Search, browse, and manage road offense acts',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
             ),
-            SizedBox(width: _spacing(16)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.homeTitle,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.homeSubtitle,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildSearchBar() => Padding(
-    padding: EdgeInsets.symmetric(
-      horizontal: _spacing(16),
-      vertical: _spacing(8),
-    ),
-    child: AppSearchBar(
-      controller: _searchController,
-      onSearch: _debouncedSearch,
     ),
   );
 
-  Widget _buildSearchInfo(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildSearchBar() => Padding(
+    padding: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
+    child: AppSearchBar(controller: _searchController, onSearch: _debouncedSearch),
+  );
 
-    return Consumer<LawProvider>(
-      builder: (_, provider, __) {
-        if (provider.searchQuery?.isNotEmpty ?? false) {
-          return Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: _spacing(16),
-              vertical: _spacing(4),
-            ),
-            child: Text(
-              l10n.searchFound(
-                provider.laws.length,
-                provider.searchQuery!,
-              ),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
+  Widget _buildSearchInfo() => Consumer<LawProvider>(
+    builder: (context, provider, _) {
+      if (provider.searchQuery?.isNotEmpty ?? false) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(4)),
+          child: Text(
+            'Found ${provider.laws.length} ${provider.laws.length == 1 ? 'entry' : 'entries'} for "${provider.searchQuery}"',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.secondary),
+          ),
+        );
+      }
+      return const SizedBox.shrink();
+    },
+  );
 
-  Widget _buildTotalLawsCount(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Card(
-      elevation: AppTheme.elevationSmall,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium)),
+  Widget _buildTotalLawsCount() => Card(
+    elevation: AppTheme.elevationSmall,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium))),
+    margin: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
+    child: Padding(
+      padding: EdgeInsets.all(_spacing(16)),
+      child: FutureBuilder<int>(
+        future: _totalLawsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) return Text('Error: ${snapshot.error}', style: TextStyle(color: Theme.of(context).colorScheme.error));
+          if (snapshot.hasData) {
+            return Text(
+              'Total Laws: ${snapshot.data}',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
-      margin: EdgeInsets.symmetric(
-        horizontal: _spacing(16),
-        vertical: _spacing(8),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(_spacing(16)),
-        child: FutureBuilder<int>(
-          future: _totalLawsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Text(
-                snapshot.error.toString(),
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              );
-            }
-            if (snapshot.hasData) {
-              return Text(
-                l10n.totalLaws(snapshot.data!),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ),
-    );
-  }
+    ),
+  );
 
   Widget _buildCategoryFilter() => Card(
     elevation: AppTheme.elevationSmall,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium)),
-    ),
-    margin: EdgeInsets.symmetric(
-      horizontal: _spacing(16),
-      vertical: _spacing(8),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_spacing(AppTheme.borderRadiusMedium))),
+    margin: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
     child: Padding(
       padding: EdgeInsets.all(_spacing(16)),
       child: Consumer<LawProvider>(
-        builder: (_, provider, __) {
+        builder: (context, provider, _) {
           return CategoryFilter(
             categories: provider.categories,
             selectedCategory: provider.selectedCategory,
@@ -230,112 +165,80 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 
   Widget _buildLawList() => Padding(
-    padding: EdgeInsets.symmetric(
-      horizontal: _spacing(16),
-      vertical: _spacing(8),
-    ),
+    padding: EdgeInsets.symmetric(horizontal: _spacing(16), vertical: _spacing(8)),
     child: RefreshIndicator(
       onRefresh: _refreshData,
       child: LawList(scrollController: _scrollController),
     ),
   );
 
-  Widget _buildHomeBody(BuildContext context) => CustomScrollView(
+  Widget _buildHomeBody() => CustomScrollView(
     controller: _scrollController,
     slivers: [
-      SliverToBoxAdapter(child: _buildHeader(context)),
+      SliverToBoxAdapter(child: _buildHeader()),
       SliverToBoxAdapter(child: _buildSearchBar()),
-      SliverToBoxAdapter(child: _buildSearchInfo(context)),
-      SliverToBoxAdapter(child: _buildTotalLawsCount(context)),
+      SliverToBoxAdapter(child: _buildSearchInfo()),
+      SliverToBoxAdapter(child: _buildTotalLawsCount()),
       SliverToBoxAdapter(child: _buildCategoryFilter()),
       SliverFillRemaining(child: _buildLawList()),
     ],
   );
 
   void _showGuideDialog() {
-    final l10n = AppLocalizations.of(context)!;
-
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(l10n.welcomeTitle),
+        title: const Text('Welcome!'),
         content: SingleChildScrollView(
           child: ListBody(
-            children: [
-              Text(l10n.welcomeIntro),
-              const SizedBox(height: 12),
-              Text(l10n.guideSearch),
-              Text(l10n.guideFilter),
-              Text(l10n.guideTap),
-              Text(l10n.guideFavorite),
-              Text(l10n.guideNav),
-              Text(l10n.guideAdmin),
+            children: const [
+              Text("Here's how to use the app:"),
+              SizedBox(height: 12),
+              Text('• Use the search bar at the top to find laws.'),
+              Text('• Filter by category below the search bar.'),
+              Text('• Tap a law to view details.'),
+              Text('• Tap the star icon to add/remove favorites.'),
+              Text('• Use the bottom navigation to switch screens.'),
+              Text('• Admins can access the Admin Panel from top-right menu.'),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.gotIt),
-          ),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Got it!'))],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final authProvider = context.watch<AuthProvider>();
     final isAdmin = authProvider.isAdmin;
 
-    final titles = [
-      l10n.homeTitle,
-      l10n.tabFavorites,
-      l10n.tabPayment,
-      l10n.tabAbout,
-      l10n.tabSettings,
-    ];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(titles[_currentIndex]),
+        title: Text(['Law Library', 'Favorites', 'Payment', 'About', 'Settings'][_currentIndex]),
         actions: [
           if (authProvider.isLoggedIn) ...[
             if (isAdmin)
               IconButton(
                 icon: const Icon(Icons.admin_panel_settings),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AdminPanelScreen()),
-                ),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())),
               ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () async {
                 await authProvider.logout();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.logoutSuccess)),
-                );
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out successfully')));
               },
             ),
           ] else
             IconButton(
               icon: const Icon(Icons.login),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              ),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
             ),
         ],
       ),
-      body: _currentIndex == 0
-          ? _buildHomeBody(context)
-          : _screens[_currentIndex],
-      bottomNavigationBar: AppBottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-      ),
+      body: _currentIndex == 0 ? _buildHomeBody() : _screens[_currentIndex],
+      bottomNavigationBar: AppBottomNavigation(currentIndex: _currentIndex, onTap: (index) => setState(() => _currentIndex = index)),
     );
   }
 

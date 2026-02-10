@@ -22,7 +22,7 @@ class LawProvider extends ChangeNotifier {
   String? _searchQuery;
   String? _selectedCategory;
 
-  // Getters
+  // ------------------- Getters -------------------
   List<Law> get laws => _laws;
   List<Law> get favorites => _favorites;
   List<String> get categories => _categories;
@@ -34,16 +34,22 @@ class LawProvider extends ChangeNotifier {
   String? get selectedCategory => _selectedCategory;
   int get currentPage => _currentPage;
 
-  // Initialize
+  // ------------------- Initialization -------------------
   Future<void> initialize() async {
     await fetchCategories();
-    await fetchLaws();
+    await fetchLaws(refresh: true);
     await loadFavorites();
   }
 
-  // Fetch laws with optional search and filter
+  // ------------------- Fetch Laws -------------------
   Future<void> fetchLaws({bool refresh = false}) async {
     if (_isLoading) return;
+
+    if (refresh) {
+      _currentPage = 1;
+      _hasMorePages = true;
+    }
+
     _isLoading = true;
     notifyListeners();
 
@@ -55,7 +61,12 @@ class LawProvider extends ChangeNotifier {
         filterCategory: _selectedCategory,
       );
 
-      _laws = newLaws;
+      if (refresh) {
+        _laws = newLaws;
+      } else {
+        _laws.addAll(newLaws);
+      }
+
       _hasMorePages = newLaws.length == _itemsPerPage;
       _updateFavoriteStatus();
     } catch (e) {
@@ -66,7 +77,7 @@ class LawProvider extends ChangeNotifier {
     }
   }
 
-  // Fetch categories for filter
+  // ------------------- Fetch Categories -------------------
   Future<void> fetchCategories() async {
     _isLoading = true;
     notifyListeners();
@@ -77,28 +88,26 @@ class LawProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
-      _isLoadingMore = false;
       notifyListeners();
     }
   }
 
-  // Set search query
+  // ------------------- Search & Filter -------------------
   void setSearchQuery(String? query) {
     _searchQuery = query;
     _currentPage = 1;
     _hasMorePages = true;
-    notifyListeners();
+    fetchLaws(refresh: true);
   }
 
-  // Set filter category
   void setFilterCategory(String? category) {
     _selectedCategory = category;
     _currentPage = 1;
     _hasMorePages = true;
-    notifyListeners();
+    fetchLaws(refresh: true);
   }
 
-  // Load favorites from local database
+  // ------------------- Favorites -------------------
   Future<void> loadFavorites() async {
     _isLoading = true;
     notifyListeners();
@@ -114,7 +123,6 @@ class LawProvider extends ChangeNotifier {
     }
   }
 
-  // Toggle favorite status
   Future<void> toggleFavorite(Law law) async {
     try {
       final isFav = await _databaseService.isFavorite(law.chapter);
@@ -127,9 +135,7 @@ class LawProvider extends ChangeNotifier {
         _favorites.add(law.copyWith(isFavorite: true));
       }
 
-      // Update favorite status in the main list
       _updateFavoriteStatus();
-
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -137,7 +143,6 @@ class LawProvider extends ChangeNotifier {
     }
   }
 
-  // Update favorite status in the main list
   void _updateFavoriteStatus() {
     final favoriteChapters = _favorites.map((law) => law.chapter).toSet();
 
@@ -148,7 +153,37 @@ class LawProvider extends ChangeNotifier {
     }
   }
 
-  // CRUD operations for admin
+  Future<void> clearFavorites() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _databaseService.clearFavorites();
+      _favorites = [];
+      _updateFavoriteStatus();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ------------------- Pagination -------------------
+  void setPage(int page) {
+    if (page > 0) {
+      _currentPage = page;
+      fetchLaws(refresh: true);
+    }
+  }
+
+  // ------------------- Error Handling -------------------
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  // ------------------- CRUD Operations (Admin) -------------------
   Future<bool> createLaw(Law law) async {
     _isLoading = true;
     _error = null;
@@ -157,7 +192,6 @@ class LawProvider extends ChangeNotifier {
     try {
       final result = await _apiService.createLaw(law);
       if (result) {
-        // Refresh laws to include the new one
         await fetchLaws(refresh: true);
         return true;
       }
@@ -171,18 +205,15 @@ class LawProvider extends ChangeNotifier {
     }
   }
 
-  // MODIFIED: Added originalChapter parameter to updateLaw
   Future<bool> updateLaw(Law law, {required String originalChapter}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      // Pass both the Law object (containing the new chapter) and the originalChapter
       final result =
       await _apiService.updateLaw(law, originalChapter: originalChapter);
       if (result) {
-        // Refresh laws to include the update
         await fetchLaws(refresh: true);
         return true;
       }
@@ -204,13 +235,11 @@ class LawProvider extends ChangeNotifier {
     try {
       final result = await _apiService.deleteLaw(chapter);
       if (result) {
-        // Remove from favorites if present
         if (await _databaseService.isFavorite(chapter)) {
           await _databaseService.removeFavorite(chapter);
           _favorites.removeWhere((item) => item.chapter == chapter);
         }
 
-        // Remove from main list
         _laws.removeWhere((item) => item.chapter == chapter);
         notifyListeners();
         return true;
@@ -222,37 +251,6 @@ class LawProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
-    }
-  }
-
-  // Clear error
-  void clearError() {
-    _error = null;
-    notifyListeners();
-  }
-
-  // Clear all favorites
-  Future<void> clearFavorites() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await _databaseService.clearFavorites();
-      _favorites = [];
-      _updateFavoriteStatus();
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // Set current page
-  void setPage(int page) {
-    if (page > 0) {
-      _currentPage = page;
-      fetchLaws(refresh: true);
     }
   }
 }
