@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:law_library/providers/theme_provider.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final themeProvider = context.watch<ThemeProvider>();
     final uiDensity = themeProvider.uiDensity;
     final fontSize = themeProvider.fontSize;
@@ -22,12 +24,14 @@ class AboutScreen extends StatelessWidget {
         children: [
           // Header
           Text(
-            'About Law Library',
-            style: textStyle.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            l10n.aboutLawLibrary,
+            style: textStyle.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           SizedBox(height: spacing(AppTheme.baseSpacing16)),
           Text(
-            'Version 2.0',
+            l10n.appVersionNumber,
             style: textStyle.titleMedium?.copyWith(color: Colors.grey),
           ),
           SizedBox(height: spacing(AppTheme.baseSpacing24)),
@@ -35,66 +39,61 @@ class AboutScreen extends StatelessWidget {
           // Description
           _buildSectionCard(
             context,
-            title: 'Description',
+            title: l10n.aboutDescriptionTitle,
+            spacing: spacing,
             child: Text(
-              'Law Library is a comprehensive application designed to help users access and manage legal information efficiently. The app provides features for searching, categorizing, and bookmarking laws for quick reference. All laws are imported from the Road Traffic Act (2022) and Road Traffic Regulation (2022).',
+              l10n.aboutDescriptionBody,
               style: textStyle.bodyMedium,
             ),
-            spacing: spacing,
           ),
 
           // Features
           _buildSectionCard(
             context,
-            title: 'Features',
+            title: l10n.aboutFeaturesTitle,
+            spacing: spacing,
             child: Column(
               children: [
-                _buildFeatureItem(context, Icons.search, 'Search Laws', spacing, fontSize),
-                _buildFeatureItem(context, Icons.category, 'Category Filtering', spacing, fontSize),
-                _buildFeatureItem(context, Icons.favorite, 'Favorites Management', spacing, fontSize),
-                _buildFeatureItem(context, Icons.settings, 'Customizable Settings', spacing, fontSize),
+                _buildFeatureItem(context, Icons.search, l10n.featureSearch, spacing, fontSize),
+                _buildFeatureItem(context, Icons.category, l10n.featureCategories, spacing, fontSize),
+                _buildFeatureItem(context, Icons.favorite, l10n.featureFavorites, spacing, fontSize),
+                _buildFeatureItem(context, Icons.settings, l10n.featureSettings, spacing, fontSize),
               ],
             ),
-            spacing: spacing,
           ),
 
           // Capstone Project
           _buildSectionCard(
             context,
-            title: 'Capstone Project',
+            title: l10n.aboutCapstoneTitle,
+            spacing: spacing,
             child: Text(
-              'This project is a capstone project made to complete the requirement of the Bachelor of Science (Hons) in Computing (Major in Software Development). Conducted under Traffic Control and Investigation Department (JSKLL), it integrates theoretical knowledge and practical skills, addressing real-world challenges through applied research and innovation.',
+              l10n.aboutCapstoneBody,
               style: textStyle.bodyMedium,
             ),
-            spacing: spacing,
           ),
 
           // Credits
           _buildSectionCard(
             context,
-            title: 'Credits',
-            child: RichText(
-              text: TextSpan(
-                style: textStyle.bodyMedium,
-                children: const [
-                  TextSpan(text: 'Project by: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextSpan(text: 'Muhammad Adam Danish bin Shukri \n'),
-                  TextSpan(text: 'UTB Supervisors: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextSpan(text: 'Dr. Wida Susanty Haji Suhaili and Ak. Dr Mohd Salihin Pg Haji Abdul Rahim\n'),
-                  TextSpan(text: 'Host Supervisor: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                  TextSpan(text: 'ASP Dk Husmawati Pg Hussin and ASP Pg Hjh Nafiah Pg Hj Asli'),
-                ],
-              ),
-            ),
+            title: l10n.aboutCreditsTitle,
             spacing: spacing,
+            child: Text(
+              l10n.aboutCreditsBody,
+              style: textStyle.bodyMedium,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionCard(BuildContext context,
-      {required String title, required Widget child, required double Function(double) spacing}) {
+  Widget _buildSectionCard(
+      BuildContext context, {
+        required String title,
+        required Widget child,
+        required double Function(double) spacing,
+      }) {
     return Card(
       elevation: AppTheme.elevationSmall,
       shape: RoundedRectangleBorder(
@@ -106,7 +105,13 @@ class AboutScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: spacing(AppTheme.baseSpacing8)),
             child,
           ],
@@ -115,9 +120,13 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureItem(BuildContext context, IconData icon, String text,
-      double Function(double) spacing, AppFontSize fontSize) {
-    // Convert AppFontSize to double using AppTheme
+  Widget _buildFeatureItem(
+      BuildContext context,
+      IconData icon,
+      String text,
+      double Function(double) spacing,
+      AppFontSize fontSize,
+      ) {
     final iconSize = AppTheme.getFontSize(20, fontSize);
 
     return Padding(
@@ -126,7 +135,9 @@ class AboutScreen extends StatelessWidget {
         children: [
           Icon(icon, size: iconSize, color: Theme.of(context).colorScheme.primary),
           SizedBox(width: spacing(AppTheme.baseSpacing8)),
-          Text(text, style: Theme.of(context).textTheme.bodyMedium),
+          Expanded(
+            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+          ),
         ],
       ),
     );

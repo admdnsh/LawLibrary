@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:law_library/providers/theme_provider.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class AppSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -41,6 +42,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final uiDensity = themeProvider.uiDensity;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       height: AppTheme.getSpacing(56, uiDensity),
@@ -59,16 +61,16 @@ class _AppSearchBarState extends State<AppSearchBar> {
       child: TextField(
         controller: widget.controller,
         decoration: InputDecoration(
-          hintText: widget.hintText ?? 'Search laws...',
+          hintText: widget.hintText ?? l10n.searchHint, // localized default
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _showClearButton
               ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    widget.controller.clear();
-                    widget.onSearch('');
-                  },
-                )
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              widget.controller.clear();
+              widget.onSearch('');
+            },
+          )
               : null,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(

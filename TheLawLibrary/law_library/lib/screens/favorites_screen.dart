@@ -6,6 +6,7 @@ import 'package:law_library/widgets/search_bar.dart';
 import 'package:law_library/models/law.dart';
 import 'package:law_library/screens/law_detail_screen.dart';
 import 'package:law_library/providers/theme_provider.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -33,8 +34,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   List<Law> _filterFavorites(List<Law> favorites) {
     if (_searchQuery.isEmpty) return favorites;
 
+    final searchLower = _searchQuery.toLowerCase();
     return favorites.where((law) {
-      final searchLower = _searchQuery.toLowerCase();
       return law.title.toLowerCase().contains(searchLower) ||
           law.description.toLowerCase().contains(searchLower) ||
           law.chapter.toLowerCase().contains(searchLower) ||
@@ -44,13 +45,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Consumer<LawProvider>(
       builder: (context, lawProvider, _) {
-        final themeProvider = Provider.of<ThemeProvider>(context);
+        final themeProvider = context.watch<ThemeProvider>();
         final uiDensity = themeProvider.uiDensity;
 
         final filteredFavorites = _filterFavorites(lawProvider.favorites);
 
+        // ---------------- Empty Favorites ----------------
         if (lawProvider.favorites.isEmpty) {
           return Center(
             child: Column(
@@ -59,24 +63,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 Icon(
                   Icons.favorite_border,
                   size: 64,
-                  color:
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .secondary
+                      .withOpacity(0.5),
                 ),
-                SizedBox(
-                    height:
-                        AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+                SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
                 Text(
-                  'No favorites yet',
+                  l10n.noFavoritesTitle,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                SizedBox(
-                    height:
-                        AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+                SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
                 Text(
-                  'Add laws to your favorites to see them here',
+                  l10n.noFavoritesDescription,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -86,17 +88,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
         return Column(
           children: [
-            // Search bar
+            // ---------------- Search Bar ----------------
             Padding(
               padding: EdgeInsets.all(
-                  AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+                AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
+              ),
               child: AppSearchBar(
                 controller: _searchController,
                 onSearch: _handleSearch,
-                hintText: 'Search favorites...',
+                hintText: l10n.searchFavoritesHint,
               ),
             ),
-            // Search results count
+
+            // ---------------- Search Result Info ----------------
             if (_searchQuery.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(
@@ -111,111 +115,97 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       size: 16,
                       color: Theme.of(context).colorScheme.secondary,
                     ),
-                    SizedBox(
-                        width: AppTheme.getSpacing(
-                            AppTheme.baseSpacing8, uiDensity)),
+                    SizedBox(width: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
                     Text(
-                      'Found ${filteredFavorites.length} ${filteredFavorites.length == 1 ? 'entry' : 'entries'} for "$_searchQuery"',
+                      l10n.favoritesSearchResult(
+                        filteredFavorites.length,
+                        _searchQuery,
+                      ),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
                     ),
                   ],
                 ),
               ),
-            // Favorites list
+
+            // ---------------- Favorites List ----------------
             Expanded(
               child: filteredFavorites.isEmpty
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.search_off,
+                      size: 64,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withOpacity(0.5),
+                    ),
+                    SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+                    Text(
+                      l10n.noSearchResultsTitle,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+                    Text(
+                      l10n.noSearchResultsDescription,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              )
+                  : ListView.builder(
+                padding: EdgeInsets.all(
+                  AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
+                ),
+                itemCount: filteredFavorites.length,
+                itemBuilder: (context, index) {
+                  final law = filteredFavorites[index];
+                  return Card(
+                    margin: EdgeInsets.only(
+                      bottom: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
+                    ),
+                    child: ListTile(
+                      title: Text(law.title),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 64,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .secondary
-                                .withOpacity(0.5),
-                          ),
-                          SizedBox(
-                              height: AppTheme.getSpacing(
-                                  AppTheme.baseSpacing16, uiDensity)),
                           Text(
-                            'No matches found',
-                            style: Theme.of(context).textTheme.headlineSmall,
+                            law.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(
-                              height: AppTheme.getSpacing(
-                                  AppTheme.baseSpacing8, uiDensity)),
+                          const SizedBox(height: 4),
                           Text(
-                            'Try adjusting your search',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.color,
-                                ),
-                            textAlign: TextAlign.center,
+                            l10n.lawChapterCategory(law.chapter, law.category),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
                           ),
                         ],
                       ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(AppTheme.getSpacing(
-                          AppTheme.baseSpacing16, uiDensity)),
-                      itemCount: filteredFavorites.length,
-                      itemBuilder: (context, index) {
-                        final law = filteredFavorites[index];
-                        return Card(
-                          margin: EdgeInsets.only(
-                              bottom: AppTheme.getSpacing(
-                                  AppTheme.baseSpacing16, uiDensity)),
-                          child: ListTile(
-                            title: Text(law.title),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  law.description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Chapter ${law.chapter} • ${law.category}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon:
-                                  const Icon(Icons.favorite, color: Colors.red),
-                              onPressed: () => lawProvider.toggleFavorite(law),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      LawDetailScreen(law: law),
-                                ),
-                              );
-                            },
+                      trailing: IconButton(
+                        icon: const Icon(Icons.favorite, color: Colors.red),
+                        onPressed: () => lawProvider.toggleFavorite(law),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LawDetailScreen(law: law),
                           ),
                         );
                       },
                     ),
+                  );
+                },
+              ),
             ),
           ],
         );

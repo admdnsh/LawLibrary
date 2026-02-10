@@ -6,6 +6,7 @@ import 'package:law_library/screens/law_detail_screen.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:law_library/providers/theme_provider.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class LawList extends StatefulWidget {
   final ScrollController scrollController;
@@ -18,6 +19,8 @@ class LawList extends StatefulWidget {
 class _LawListState extends State<LawList> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Consumer<LawProvider>(
       builder: (context, lawProvider, _) {
         final themeProvider = Provider.of<ThemeProvider>(context);
@@ -35,24 +38,19 @@ class _LawListState extends State<LawList> {
                 Icon(
                   Icons.search_off,
                   size: 64,
-                  color:
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
                 ),
-                SizedBox(
-                    height:
-                        AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+                SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
                 Text(
-                  'No laws found',
+                  l10n.searchNoResultsTitle,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                SizedBox(
-                    height:
-                        AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+                SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
                 Text(
-                  'Try adjusting your search or filter criteria',
+                  l10n.searchNoResultsSubtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -63,7 +61,6 @@ class _LawListState extends State<LawList> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Law list
             Expanded(
               child: Scrollbar(
                 controller: widget.scrollController,
@@ -85,25 +82,21 @@ class _LawListState extends State<LawList> {
                           ),
                         );
                       },
-                    )
-                        .animate()
-                        .fadeIn(
-                          duration: const Duration(milliseconds: 400),
-                          delay: Duration(milliseconds: index * 50),
-                        )
-                        .slideX(
-                          begin: 0.1,
-                          end: 0,
-                          duration: const Duration(milliseconds: 400),
-                          delay: Duration(milliseconds: index * 50),
-                          curve: Curves.easeOutQuad,
-                        );
+                    ).animate().fadeIn(
+                      duration: const Duration(milliseconds: 400),
+                      delay: Duration(milliseconds: index * 50),
+                    ).slideX(
+                      begin: 0.1,
+                      end: 0,
+                      duration: const Duration(milliseconds: 400),
+                      delay: Duration(milliseconds: index * 50),
+                      curve: Curves.easeOutQuad,
+                    );
                   },
                 ),
               ),
             ),
-
-            // Pagination controls at the bottom
+            // Pagination
             SafeArea(
               top: false,
               child: Padding(
@@ -130,22 +123,18 @@ class _LawListState extends State<LawList> {
                         padding: const EdgeInsets.all(4),
                         constraints: const BoxConstraints(),
                         onPressed: lawProvider.currentPage > 1
-                            ? () {
-                                lawProvider
-                                    .setPage(lawProvider.currentPage - 1);
-                              }
+                            ? () => lawProvider.setPage(lawProvider.currentPage - 1)
                             : null,
-                        tooltip: 'Previous page',
+                        tooltip: l10n.paginationPrevious,
                       ),
                       Container(
                         width: 40,
                         alignment: Alignment.center,
                         child: Text(
                           '${lawProvider.currentPage}',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       IconButton(
@@ -153,36 +142,27 @@ class _LawListState extends State<LawList> {
                         padding: const EdgeInsets.all(4),
                         constraints: const BoxConstraints(),
                         onPressed: lawProvider.hasMorePages
-                            ? () {
-                                lawProvider
-                                    .setPage(lawProvider.currentPage + 1);
-                              }
+                            ? () => lawProvider.setPage(lawProvider.currentPage + 1)
                             : null,
-                        tooltip: 'Next page',
+                        tooltip: l10n.paginationNext,
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-
+            // Error display
             if (lawProvider.error != null)
               Container(
-                padding: EdgeInsets.all(
-                    AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+                padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
                 color: Theme.of(context).colorScheme.errorContainer,
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.error,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    SizedBox(
-                        width: AppTheme.getSpacing(
-                            AppTheme.baseSpacing8, uiDensity)),
+                    Icon(Icons.error, color: Theme.of(context).colorScheme.error),
+                    SizedBox(width: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
                     Expanded(
                       child: Text(
-                        'Error: ${lawProvider.error}',
+                        l10n.searchError(lawProvider.error!),
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onErrorContainer,
                         ),
@@ -190,9 +170,7 @@ class _LawListState extends State<LawList> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () {
-                        lawProvider.clearError();
-                      },
+                      onPressed: lawProvider.clearError,
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ],

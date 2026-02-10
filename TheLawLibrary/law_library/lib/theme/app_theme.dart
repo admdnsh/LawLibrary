@@ -4,26 +4,27 @@ import 'package:law_library/providers/theme_provider.dart';
 
 class AppTheme {
   // Colors
-  static const Color primaryColor = Color(0xFF0A84FF);
-  static const Color secondaryColor = Color(0xFF5E5CE6);
-  static const Color accentColor = Color(0xFFFF9500);
-  static const Color successColor = Color(0xFF30D158);
-  static const Color warningColor = Color(0xFFFFD60A);
-  static const Color errorColor = Color(0xFFFF453A);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color secondaryColor = Color(0xFF6366F1);
+  static const Color accentColor = Color(0xFFFBBF24);
+  static const Color successColor = Color(0xFF16A34A);
+  static const Color warningColor = Color(0xFFF59E0B);
+  static const Color errorColor = Color(0xFFDC2626);
 
   // Light theme colors
-  static const Color lightBackgroundColor = Color(0xFFF2F2F7);
-  static const Color lightSurfaceColor = Colors.white;
-  static const Color lightTextColor = Color(0xFF1C1C1E);
-  static const Color lightSecondaryTextColor = Color(0xFF6C6C70);
-  static const Color lightDividerColor = Color(0xFFD1D1D6);
+  static const Color lightBackgroundColor = Color(0xFFF9FAFB);
+  static const Color lightSurfaceColor = Color(0xFFFFFFFF);
+  static const Color lightTextColor = Color(0xFF111827);
+  static const Color lightSecondaryTextColor = Color(0xFF6B7280);
+  static const Color lightDividerColor = Color(0xFFE5E7EB);
+
 
   // Dark theme colors
-  static const Color darkBackgroundColor = Color(0xFF1C1C1E);
-  static const Color darkSurfaceColor = Color(0xFF2C2C2E);
-  static const Color darkTextColor = Color(0xFFF2F2F7);
-  static const Color darkSecondaryTextColor = Color(0xFFAEAEB2);
-  static const Color darkDividerColor = Color(0xFF38383A);
+  static const Color darkBackgroundColor = Color(0xFF111827);
+  static const Color darkSurfaceColor = Color(0xFF1F2937);
+  static const Color darkTextColor = Color(0xFFF9FAFB);
+  static const Color darkSecondaryTextColor = Color(0xFF9CA3AF);
+  static const Color darkDividerColor = Color(0xFF374151);
 
   // Spacing
   static const double baseSpacing2 = 2.0;

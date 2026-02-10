@@ -1,35 +1,27 @@
 {
   "@@locale": "en",
-
   "appTitle": "Law Library",
   "settings": "Settings",
-
   "appearance": "Appearance",
   "darkMode": "Dark Mode",
   "uiDensity": "UI Density",
   "fontSize": "Font Size",
   "adjustSpacing": "Adjust spacing",
-  "adjustFontSize": "Adjust text size"
-
-"language": "Language",
+  "adjustFontSize": "Adjust text size",
+  "language": "Language",
   "selectLanguage": "Select Language",
-
   "data": "Data & Storage",
   "favorites": "Favorites",
   "clearFavorites": "Clear Favorites",
   "removeSavedLaws": "Remove all saved laws",
   "clearCache": "Clear Cache",
   "removeTempData": "Remove temporary data",
-
   "confirm": "Confirm",
   "cancel": "Cancel",
   "confirmRemoveFavorites": "Are you sure you want to remove all favorites?",
   "confirmClearCache": "Are you sure you want to clear cached data?",
-
   "about": "About",
   "appVersion": "App Version",
-
-
   "paymentInformation": "Payment Information",
   "whereToPay": "Where to Make Your Payment",
   "paymentOptionsText": "To make your payment, you have two convenient options:",
@@ -40,5 +32,82 @@
   "importantNote": "Important Note",
   "importantNoteDescription": "Please ensure you bring the necessary documentation (e.g., offence notice, identification) when making payments at a branch.",
   "onlinePaymentGuide": "Online Payment Guide",
-  "videoReference": "For more information about online payments, please refer to this video:"
+  "videoReference": "For more information about online payments, please refer to this video:",
+  "aboutLawLibrary": "About Law Library",
+  "appVersionNumber": "Version 2.0",
+  "aboutDescriptionTitle": "Description",
+  "aboutDescriptionBody": "Law Library is a comprehensive application designed to help users access, explore, and manage legal information efficiently. The app enables searching, categorizing, and bookmarking laws for quick reference. All legal content is sourced from the Road Traffic Act (2022) and Road Traffic Regulations (2022).",
+  "aboutFeaturesTitle": "Features",
+  "featureSearch": "Search Laws",
+  "featureCategories": "Category Filtering",
+  "featureFavorites": "Favorites Management",
+  "featureSettings": "Customizable Settings",
+  "aboutCapstoneTitle": "Capstone Project",
+  "aboutCapstoneBody": "This application is developed as a capstone project to fulfill the requirements of the Bachelor of Science (Hons) in Computing (Major in Software Development). The project is conducted in collaboration with the Traffic Control and Investigation Department (JSKLL), integrating theoretical knowledge and practical skills to address real-world challenges through applied research and innovation.",
+  "aboutCreditsTitle": "Credits",
+  "aboutCreditsBody": "Project by: Muhammad Adam Danish bin Shukri\n\nUTB Supervisors:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nHost Supervisors:\nASP Dk Husmawati Pg Hussin\nASP Pg Hjh Nafiah Pg Hj Asli",
+  "homeTitle": "Law Library",
+  "homeSubtitle": "Search, browse, and manage road offense acts",
+  "searchFound": "Found {count} {count, plural, one{entry} other{entries}} for \"{query}\"",
+  "totalLaws": "Total Laws: {count}",
+  "welcomeTitle": "Welcome!",
+  "welcomeIntro": "Here's how to use the app:",
+  "guideSearch": "• Use the search bar at the top to find laws.",
+  "guideFilter": "• Filter by category below the search bar.",
+  "guideTap": "• Tap a law to view details.",
+  "guideFavorite": "• Tap the star icon to add/remove favorites.",
+  "guideNav": "• Use the bottom navigation to switch screens.",
+  "guideAdmin": "• Admins can access the Admin Panel from top-right menu.",
+  "gotIt": "Got it!",
+  "logoutSuccess": "Logged out successfully",
+  "tabFavorites": "Favorites",
+  "tabPayment": "Payment",
+  "tabAbout": "About",
+  "tabSettings": "Settings",
+  "tabHome": "Home",
+  "noFavoritesTitle": "No favorites yet",
+  "noFavoritesDescription": "Add laws to your favorites to see them here",
+  "searchFavoritesHint": "Search favorites...",
+  "favoritesSearchResult": "Found {count} {count, plural, one{entry} other{entries}} for \"{query}\"",
+  "@favoritesSearchResult": {
+    "placeholders": {
+      "count": {},
+      "query": {}
+    }
+  },
+  "noSearchResultsTitle": "No matches found",
+  "noSearchResultsDescription": "Try adjusting your search",
+  "lawChapterCategory": "Chapter {chapter} • {category}",
+  "@lawChapterCategory": {
+    "placeholders": {
+      "chapter": {},
+      "category": {}
+    }
+  },
+
+  "loginAppBarTitle": "Admin Login",
+  "loginWelcomeTitle": "Welcome Back",
+  "loginSubtitle": "Sign in to access admin features",
+  "loginUsernameLabel": "Username",
+  "loginPasswordLabel": "Password",
+  "loginButton": "LOGIN",
+  "loginErrorGeneric": "An error occurred. Please try again.",
+
+  "loginUsernameRequired": "Username is required",
+  "loginUsernameMinLength": "Username must be at least 3 characters",
+  "loginPasswordRequired": "Password is required",
+  "loginPasswordMinLength": "Password must be at least 6 characters",
+  "lawChapterRequired": "Chapter is required",
+  "lawTitleRequired": "Title is required",
+  "lawCategoryRequired": "Category is required",
+
+  "searchHint": "Search laws...",
+  "searchNoResults": "No results found",
+
+  "searchNoResultsTitle": "No laws found",
+  "searchNoResultsSubtitle": "Try adjusting your search or filter criteria",
+  "paginationPrevious": "Previous page",
+  "paginationNext": "Next page",
+  "searchError": "Error: {errorMessage}"
+
 }
