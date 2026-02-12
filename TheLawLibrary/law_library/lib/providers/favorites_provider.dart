@@ -29,10 +29,14 @@ class FavoritesProvider extends ChangeNotifier {
   }
 
   /// Sync favorites with the master law list (from LawProvider)
-  void syncWithLawList(List<Law> allLaws) {
-    for (var law in allLaws) {
-      law.isFavorite = _favorites.any((f) => f.chapter == law.chapter);
-    }
-    notifyListeners();
+  List<Law> syncWithLawList(List<Law> allLaws) {
+    final favoriteChapters =
+    _favorites.map((f) => f.chapter).toSet();
+
+    return allLaws.map((law) {
+      return law.copyWith(
+        isFavorite: favoriteChapters.contains(law.chapter),
+      );
+    }).toList();
   }
 }

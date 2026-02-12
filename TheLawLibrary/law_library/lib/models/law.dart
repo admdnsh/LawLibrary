@@ -12,7 +12,7 @@ class Law {
   final String? fourthCompoundFine;
   final String? fifthCompoundFine;
 
-  bool isFavorite;
+  final bool isFavorite;
 
   Law({
     required this.chapter,
@@ -27,13 +27,13 @@ class Law {
     this.isFavorite = false,
   });
 
-  // --- JSON Parsing (from API) ---
+  // ------------------- JSON (API) -------------------
   factory Law.fromJson(Map<String, dynamic> json) {
     return Law(
-      chapter: json['Chapter'] as String,
-      category: json['Category'] as String,
-      title: json['Title'] as String,
-      description: json['Description'] as String,
+      chapter: json['Chapter']?.toString() ?? '',
+      category: json['Category']?.toString() ?? '',
+      title: json['Title']?.toString() ?? '',
+      description: json['Description']?.toString() ?? '',
       compoundFine: json['Compound_Fine']?.toString(),
       secondCompoundFine: json['Second_Compound_Fine']?.toString(),
       thirdCompoundFine: json['Third_Compound_Fine']?.toString(),
@@ -58,19 +58,19 @@ class Law {
     };
   }
 
-  // --- Database (Sqflite) Mapping ---
+  // ------------------- SQLite -------------------
   factory Law.fromMap(Map<String, dynamic> map) {
     return Law(
-      chapter: map['chapter'] as String,
-      category: map['category'] as String,
-      title: map['title'] as String,
-      description: map['description'] as String,
+      chapter: map['chapter']?.toString() ?? '',
+      category: map['category']?.toString() ?? '',
+      title: map['title']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
       compoundFine: map['compound_fine']?.toString(),
       secondCompoundFine: map['second_compound_fine']?.toString(),
       thirdCompoundFine: map['third_compound_fine']?.toString(),
       fourthCompoundFine: map['fourth_compound_fine']?.toString(),
       fifthCompoundFine: map['fifth_compound_fine']?.toString(),
-      isFavorite: true, // everything in favorites table is favorite
+      isFavorite: true, // everything from favorites table is favorite
     );
   }
 
@@ -85,11 +85,10 @@ class Law {
       'third_compound_fine': thirdCompoundFine,
       'fourth_compound_fine': fourthCompoundFine,
       'fifth_compound_fine': fifthCompoundFine,
-      // isFavorite is implicit in favorites table, so not included
     };
   }
 
-  // --- Copy method for immutability ---
+  // ------------------- Copy -------------------
   Law copyWith({
     String? chapter,
     String? category,
