@@ -269,12 +269,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       ),
                       Text(
                         'Page ${lawProvider.currentPage}'
-                            '${lawProvider.hasMorePages ? '' : ' (Last)'}',
+                            '${lawProvider.hasNextPage ? '' : ' (Last)'}',
                       ),
                       IconButton(
                         icon: const Icon(Icons.arrow_forward),
                         onPressed:
-                        lawProvider.hasMorePages
+                        lawProvider.hasNextPage
                             ? () => lawProvider.setPage(
                             lawProvider.currentPage +
                                 1)

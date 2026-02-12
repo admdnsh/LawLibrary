@@ -26,10 +26,12 @@ class _LawListState extends State<LawList> {
         final themeProvider = Provider.of<ThemeProvider>(context);
         final uiDensity = themeProvider.uiDensity;
 
+        // Loading state
         if (lawProvider.isLoading && lawProvider.laws.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
+        // No results state
         if (lawProvider.laws.isEmpty) {
           return Center(
             child: Column(
@@ -58,8 +60,8 @@ class _LawListState extends State<LawList> {
           );
         }
 
+        // Main list with pagination
         return Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
               child: Scrollbar(
@@ -78,7 +80,7 @@ class _LawListState extends State<LawList> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => LawDetailScreen(law: law),
+                            builder: (_) => LawDetailScreen(law: law),
                           ),
                         );
                       },
@@ -96,11 +98,11 @@ class _LawListState extends State<LawList> {
                 ),
               ),
             ),
-            // Pagination
+            // Pagination Controls
             SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
@@ -122,8 +124,8 @@ class _LawListState extends State<LawList> {
                         icon: const Icon(Icons.chevron_left, size: 18),
                         padding: const EdgeInsets.all(4),
                         constraints: const BoxConstraints(),
-                        onPressed: lawProvider.currentPage > 1
-                            ? () => lawProvider.setPage(lawProvider.currentPage - 1)
+                        onPressed: lawProvider.hasPreviousPage
+                            ? () => lawProvider.previousPage()
                             : null,
                         tooltip: l10n.paginationPrevious,
                       ),
@@ -141,8 +143,8 @@ class _LawListState extends State<LawList> {
                         icon: const Icon(Icons.chevron_right, size: 18),
                         padding: const EdgeInsets.all(4),
                         constraints: const BoxConstraints(),
-                        onPressed: lawProvider.hasMorePages
-                            ? () => lawProvider.setPage(lawProvider.currentPage + 1)
+                        onPressed: lawProvider.hasNextPage
+                            ? () => lawProvider.nextPage()
                             : null,
                         tooltip: l10n.paginationNext,
                       ),
@@ -151,7 +153,7 @@ class _LawListState extends State<LawList> {
                 ),
               ),
             ),
-            // Error display
+            // Error message
             if (lawProvider.error != null)
               Container(
                 padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
