@@ -45,7 +45,7 @@
   "aboutCapstoneTitle": "Capstone Project",
   "aboutCapstoneBody": "This application is developed as a capstone project to fulfill the requirements of the Bachelor of Science (Hons) in Computing (Major in Software Development). The project is conducted in collaboration with the Traffic Control and Investigation Department (JSKLL), integrating theoretical knowledge and practical skills to address real-world challenges through applied research and innovation.",
   "aboutCreditsTitle": "Credits",
-  "aboutCreditsBody": "Project by: Muhammad Adam Danish bin Shukri\n\nUTB Supervisors:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nHost Supervisors:\nASP Dk Husmawati Pg Hussin\nASP Pg Hjh Nafiah Pg Hj Asli",
+  "aboutCreditsBody": "Project by: Muhammad Adam Danish bin Shukri\n\nUTB Supervisors:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nHost Supervisors:\nASP Pg Hjh Nafiah Pg Hj Asli",
   "homeTitle": "Law Library",
   "homeSubtitle": "Search, browse, and manage road offense acts",
   "searchFound": "Found {count} {count, plural, one{entry} other{entries}} for \"{query}\"",
