@@ -35,6 +35,11 @@ class AppBottomNavigation extends StatelessWidget {
           label: l10n.tabFavorites,
         ),
         BottomNavigationBarItem(
+          icon: const Icon(Icons.bar_chart_outlined),
+          activeIcon: const Icon(Icons.bar_chart),
+          label: 'Dashboard',
+        ),
+        BottomNavigationBarItem(
           icon: const Icon(Icons.payment),
           label: l10n.tabPayment,
         ),

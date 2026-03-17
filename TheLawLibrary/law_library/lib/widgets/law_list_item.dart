@@ -22,6 +22,11 @@ class LawListItem extends StatelessWidget {
     final uiDensity = themeProvider.uiDensity;
     final fontSize = themeProvider.fontSize;
 
+    // Determine fine display — show compound fine if available, otherwise N/A
+    final bool hasFine =
+        law.compoundFine != null && law.compoundFine!.trim().isNotEmpty;
+    final String fineLabel = hasFine ? 'BND ${law.compoundFine}' : 'No fine';
+
     return Padding(
       padding: EdgeInsets.only(
           bottom: AppTheme.getSpacing(AppTheme.baseSpacing12, uiDensity)),
@@ -68,62 +73,127 @@ class LawListItem extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Main content area with chapter, title, and category
+                // ── Main content ──────────────────────────────────
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Chapter badge
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppTheme.getSpacing(
-                              AppTheme.baseSpacing8, uiDensity),
-                          vertical: AppTheme.getSpacing(
-                              AppTheme.baseSpacing4, uiDensity),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(
-                              AppTheme.getSpacing(
-                                  AppTheme.borderRadiusSmall, uiDensity)),
-                        ),
-                        child: Text(
-                          law.chapter,
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    color: Theme.of(context)
+                      // Top row: chapter badge + fine badge
+                      // Using Wrap so badges flow to next line if space is tight
+                      Wrap(
+                        spacing: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity),
+                        runSpacing: AppTheme.getSpacing(AppTheme.baseSpacing4, uiDensity),
+                        children: [
+                          // Chapter badge
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.getSpacing(
+                                  AppTheme.baseSpacing8, uiDensity),
+                              vertical: AppTheme.getSpacing(
+                                  AppTheme.baseSpacing4, uiDensity),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              borderRadius: BorderRadius.circular(
+                                  AppTheme.getSpacing(
+                                      AppTheme.borderRadiusSmall, uiDensity)),
+                            ),
+                            child: Text(
+                              law.chapter,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          // Fine badge
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppTheme.getSpacing(
+                                  AppTheme.baseSpacing8, uiDensity),
+                              vertical: AppTheme.getSpacing(
+                                  AppTheme.baseSpacing4, uiDensity),
+                            ),
+                            decoration: BoxDecoration(
+                              color: hasFine
+                                  ? Colors.red.shade50
+                                  : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceVariant,
+                              borderRadius: BorderRadius.circular(
+                                  AppTheme.getSpacing(
+                                      AppTheme.borderRadiusSmall, uiDensity)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.monetization_on_outlined,
+                                  size: AppTheme.getFontSize(12, fontSize),
+                                  color: hasFine
+                                      ? Colors.red.shade700
+                                      : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  fineLabel,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall
+                                      ?.copyWith(
+                                    color: hasFine
+                                        ? Colors.red.shade700
+                                        : Theme.of(context)
                                         .colorScheme
-                                        .onPrimaryContainer,
+                                        .onSurfaceVariant,
                                     fontWeight: FontWeight.bold,
                                   ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
+
                       SizedBox(
                           height: AppTheme.getSpacing(
                               AppTheme.baseSpacing8, uiDensity)),
+
                       // Title
                       Text(
                         law.title,
                         style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.2,
-                                ),
+                        Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+
                       SizedBox(
                           height: AppTheme.getSpacing(
                               AppTheme.baseSpacing4, uiDensity)),
+
                       // Category
                       Text(
                         law.category,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -131,7 +201,7 @@ class LawListItem extends StatelessWidget {
                   ),
                 ),
 
-                // Favorite and arrow icons with fixed width
+                // ── Right side: favourite star + arrow ───────────
                 SizedBox(
                   width: AppTheme.getSpacing(60, uiDensity),
                   child: Row(

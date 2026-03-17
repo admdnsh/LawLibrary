@@ -3,17 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:law_library/l10n/app_localizations.dart';
 import 'package:law_library/providers/law_provider.dart';
 import 'package:law_library/providers/auth_provider.dart';
 import 'package:law_library/providers/theme_provider.dart';
-import 'package:law_library/services/api_service.dart';
+import 'package:law_library/services/recent_searches_service.dart';
 
-import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/widgets/bottom_navigation.dart';
 import 'package:law_library/widgets/search_bar.dart';
-import 'package:law_library/widgets/category_filter.dart';
 import 'package:law_library/widgets/law_list.dart';
 
 import 'package:law_library/screens/favorites_screen.dart';
@@ -22,6 +22,7 @@ import 'package:law_library/screens/about_screen.dart';
 import 'package:law_library/screens/settings_screen.dart';
 import 'package:law_library/screens/login_screen.dart';
 import 'package:law_library/screens/admin_panel_screen.dart';
+import 'package:law_library/screens/dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,39 +34,87 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final RecentSearchesService _recentSearchesService = RecentSearchesService();
 
   int _currentIndex = 0;
   Timer? _debounce;
-  Future<int>? _totalLawsFuture;
+  List<String> _recentSearches = [];
+
+  // Offline state
+  bool _isOffline = false;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+
+  // --------------------------------------------------
+  // LIFECYCLE
+  // --------------------------------------------------
 
   @override
   void initState() {
     super.initState();
-    _refreshData();
-    _totalLawsFuture = ApiService().getTotalLawCount();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showGuideDialog();
-    });
+    _loadRecentSearches();
+    _initConnectivity();
   }
 
-  Future<void> _refreshData() async {
-    await context.read<LawProvider>().fetchLaws(refresh: true);
+  // --------------------------------------------------
+  // OFFLINE DETECTION (feature 8)
+  // Checks connectivity on load and listens for changes.
+  // Shows an orange banner when the device is offline.
+  // --------------------------------------------------
+
+  Future<void> _initConnectivity() async {
+    final results = await Connectivity().checkConnectivity();
+    _updateOfflineState(results);
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen(_updateOfflineState);
   }
+
+  void _updateOfflineState(List<ConnectivityResult> results) {
+    final offline = results.every((r) => r == ConnectivityResult.none);
+    if (mounted && offline != _isOffline) {
+      setState(() => _isOffline = offline);
+    }
+  }
+
+  // --------------------------------------------------
+  // RECENT SEARCHES
+  // --------------------------------------------------
+
+  Future<void> _loadRecentSearches() async {
+    final searches = await _recentSearchesService.getAll();
+    if (mounted) setState(() => _recentSearches = searches);
+  }
+
+  Future<void> _saveRecentSearch(String query) async {
+    if (query.trim().isEmpty) return;
+    final updated = await _recentSearchesService.add(query);
+    if (mounted) setState(() => _recentSearches = updated);
+  }
+
+  Future<void> _clearRecentSearches() async {
+    await _recentSearchesService.clear();
+    if (mounted) setState(() => _recentSearches = []);
+  }
+
+  // --------------------------------------------------
+  // SEARCH
+  // --------------------------------------------------
 
   void _handleSearch(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
       final provider = context.read<LawProvider>();
       provider.setSearchQuery(query.isEmpty ? null : query);
-      provider.fetchLaws(refresh: true);
+      if (query.isNotEmpty) _saveRecentSearch(query);
     });
   }
 
-  void _handleCategoryChange(String? category) {
-    final provider = context.read<LawProvider>();
-    provider.setFilterCategory(category);
-    provider.fetchLaws(refresh: true);
+  void _applyRecentSearch(String query) {
+    _searchController.text = query;
+    _searchController.selection = TextSelection.fromPosition(
+      TextPosition(offset: query.length),
+    );
+    context.read<LawProvider>().setSearchQuery(query);
+    _saveRecentSearch(query);
   }
 
   void _onTabChanged(int index) {
@@ -73,199 +122,280 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --------------------------------------------------
+  // OFFLINE BANNER
+  // --------------------------------------------------
+
+  Widget _buildOfflineBanner() {
+    return AnimatedSlide(
+      offset: _isOffline ? Offset.zero : const Offset(0, -1),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: AnimatedOpacity(
+        opacity: _isOffline ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 300),
+        child: Container(
+          width: double.infinity,
+          color: Colors.orange.shade700,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: const Row(
+            children: [
+              Icon(Icons.wifi_off, color: Colors.white, size: 16),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'You\'re offline — results may be limited or unavailable',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --------------------------------------------------
   // HOME BODY
   // --------------------------------------------------
 
-  Widget _buildHomeBody(
+  Widget _buildHomeBody(BuildContext context, AppLocalizations l10n) {
+    return Consumer<LawProvider>(
+      builder: (context, provider, _) {
+        final bool isIdle = provider.searchQuery == null;
+
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.translucent,
+          child: Column(
+            children: [
+              // ── Offline banner ────────────────────────────────────
+              _buildOfflineBanner(),
+
+              // ── Top section: always visible ───────────────────────
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  isIdle ? 0 : 24,
+                  24,
+                  isIdle ? 0 : 12,
+                ),
+                child: isIdle
+                    ? _buildIdleLayout(context, l10n, provider)
+                    : _buildActiveLayout(context, l10n, provider),
+              ),
+
+              // ── Results: only shown when searching ────────────────
+              if (!isIdle)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: LawList(scrollController: _scrollController),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // --------------------------------------------------
+  // IDLE LAYOUT
+  // --------------------------------------------------
+
+  Widget _buildIdleLayout(
       BuildContext context,
       AppLocalizations l10n,
-      UiDensity uiDensity,
+      LawProvider provider,
       ) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        // Header
-        SliverToBoxAdapter(
-          child: _buildHeader(context, l10n),
-        ),
-
-        // Search bar
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.all(
-              AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-            ),
-            child: AppSearchBar(
-              controller: _searchController,
-              hintText: l10n.searchHint,
-              onSearch: _handleSearch,
-            ),
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.75,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset('assets/logo.png', width: 96)
+              .animate()
+              .fadeIn(duration: const Duration(milliseconds: 500))
+              .scale(
+            begin: const Offset(0.85, 0.85),
+            end: const Offset(1, 1),
           ),
-        ),
 
-        // Search result text
-        SliverToBoxAdapter(
-          child: Consumer<LawProvider>(
-            builder: (context, provider, _) {
-              if (provider.searchQuery?.isNotEmpty == true) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppTheme.getSpacing(
-                        AppTheme.baseSpacing16, uiDensity),
+          const SizedBox(height: 20),
+
+          Text(
+            l10n.homeTitle,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          )
+              .animate()
+              .fadeIn(
+            duration: const Duration(milliseconds: 400),
+            delay: const Duration(milliseconds: 100),
+          )
+              .slideY(begin: 0.1, end: 0),
+
+          const SizedBox(height: 6),
+
+          Text(
+            l10n.homeSubtitle,
+            style: const TextStyle(color: Colors.grey),
+            textAlign: TextAlign.center,
+          )
+              .animate()
+              .fadeIn(
+            duration: const Duration(milliseconds: 400),
+            delay: const Duration(milliseconds: 150),
+          ),
+
+          const SizedBox(height: 32),
+
+          AppSearchBar(
+            controller: _searchController,
+            hintText: l10n.searchHint,
+            onSearch: _handleSearch,
+          )
+              .animate()
+              .fadeIn(
+            duration: const Duration(milliseconds: 400),
+            delay: const Duration(milliseconds: 200),
+          )
+              .slideY(begin: 0.15, end: 0),
+
+          if (_recentSearches.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            _buildRecentSearches(context),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentSearches(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.history,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.secondary),
+                const SizedBox(width: 4),
+                Text(
+                  'Recent',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontWeight: FontWeight.w600,
                   ),
-                  child: Text(
-                    l10n.searchFound(
-                      provider.laws.length,
-                      provider.searchQuery!,
-                    ),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                )
-                    .animate()
-                    .fadeIn(duration: const Duration(milliseconds: 300))
-                    .slideY(begin: -0.1, end: 0);
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+                ),
+              ],
+            ),
+            GestureDetector(
+              onTap: _clearRecentSearches,
+              child: Text(
+                'Clear',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+            ),
+          ],
+        )
+            .animate()
+            .fadeIn(
+          duration: const Duration(milliseconds: 300),
+          delay: const Duration(milliseconds: 250),
         ),
 
-        // Total laws count
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal:
-              AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-              vertical:
-              AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity),
-            ),
-            child: FutureBuilder<int>(
-              future: _totalLawsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                }
-                if (snapshot.hasError) {
-                  return Text(
-                    l10n.searchError(snapshot.error.toString()),
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  );
-                }
-                return Text(
-                  l10n.totalLaws(snapshot.data ?? 0),
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                );
-              },
-            ),
-          ),
-        ),
+        const SizedBox(height: 10),
 
-        // Category filter
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal:
-              AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-            ),
-            child: Consumer<LawProvider>(
-              builder: (context, provider, _) {
-                return CategoryFilter(
-                  categories: provider.categories,
-                  selectedCategory: provider.selectedCategory,
-                  onCategoryChanged: _handleCategoryChange,
-                );
-              },
-            ),
-          ),
-        ),
-
-        // Law list (pagination stays here)
-        SliverFillRemaining(
-          child: Padding(
-            padding: EdgeInsets.all(
-              AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
-            ),
-            child: RefreshIndicator(
-              onRefresh: _refreshData,
-              child: LawList(scrollController: _scrollController),
-            ),
-          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _recentSearches.asMap().entries.map((entry) {
+            final index = entry.key;
+            final query = entry.value;
+            return ActionChip(
+              avatar: Icon(
+                Icons.history,
+                size: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              label: Text(query),
+              onPressed: () => _applyRecentSearch(query),
+              backgroundColor:
+              Theme.of(context).colorScheme.surfaceContainerHighest,
+              labelStyle: Theme.of(context).textTheme.bodySmall,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+            )
+                .animate()
+                .fadeIn(
+              duration: const Duration(milliseconds: 300),
+              delay: Duration(milliseconds: 270 + (index * 50)),
+            )
+                .slideX(begin: 0.1, end: 0);
+          }).toList(),
         ),
       ],
     );
   }
 
-  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-      child: Row(
-        children: [
-          Image.asset('assets/logo.png', width: 72),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.homeTitle,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.homeSubtitle,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // --------------------------------------------------
-  // GUIDE DIALOG
+  // ACTIVE LAYOUT
   // --------------------------------------------------
 
-  void _showGuideDialog() {
-    final l10n = AppLocalizations.of(context)!;
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(l10n.welcomeTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildActiveLayout(
+      BuildContext context,
+      AppLocalizations l10n,
+      LawProvider provider,
+      ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Text(l10n.welcomeIntro),
-            const SizedBox(height: 12),
-            Text(l10n.guideSearch),
-            Text(l10n.guideFilter),
-            Text(l10n.guideTap),
-            Text(l10n.guideFavorite),
-            Text(l10n.guideNav),
-            Text(l10n.guideAdmin),
+            Image.asset('assets/logo.png', width: 40),
+            const SizedBox(width: 12),
+            Text(
+              l10n.homeTitle,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.gotIt),
-          ),
-        ],
-      ),
+
+        const SizedBox(height: 16),
+
+        AppSearchBar(
+          controller: _searchController,
+          hintText: l10n.searchHint,
+          onSearch: _handleSearch,
+        ),
+
+        const SizedBox(height: 8),
+
+        if (!provider.isLoading)
+          Text(
+            l10n.searchFound(provider.laws.length, provider.searchQuery!),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+          )
+              .animate()
+              .fadeIn(duration: const Duration(milliseconds: 250))
+              .slideY(begin: -0.1, end: 0),
+      ],
     );
   }
 
@@ -277,7 +407,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final auth = context.watch<AuthProvider>();
-    final theme = context.watch<ThemeProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -285,6 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
           [
             l10n.tabHome,
             l10n.tabFavorites,
+            'Dashboard',
             l10n.tabPayment,
             l10n.tabAbout,
             l10n.tabSettings,
@@ -310,17 +440,17 @@ class _HomeScreenState extends State<HomeScreen> {
             }
                 : () => Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (_) => const LoginScreen()),
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
             ),
           ),
         ],
       ),
       body: _currentIndex == 0
-          ? _buildHomeBody(context, l10n, theme.uiDensity)
+          ? _buildHomeBody(context, l10n)
           : [
         const SizedBox(),
         const FavoritesScreen(),
+        const DashboardScreen(),
         const PaymentScreen(),
         const AboutScreen(),
         const SettingsScreen(),
@@ -336,6 +466,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     _debounce?.cancel();
+    _scrollController.dispose();
+    _connectivitySubscription?.cancel();
     super.dispose();
   }
 }

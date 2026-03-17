@@ -43,7 +43,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) {
           final provider = LawProvider();
-          provider.initialize(); // Fetch laws, categories & favorites on startup
+          // Only load categories & favorites on startup.
+          // Laws are fetched on demand when the user searches.
+          provider.fetchCategories();
+          provider.loadFavorites();
           return provider;
         }),
       ],
@@ -66,7 +69,7 @@ class MyApp extends StatelessWidget {
       // -----------------------------
       // Localization
       // -----------------------------
-      locale: themeProvider.locale, // current locale from provider
+      locale: themeProvider.locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,

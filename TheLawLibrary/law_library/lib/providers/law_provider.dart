@@ -40,7 +40,7 @@ class LawProvider extends ChangeNotifier {
   // ------------------- Init -------------------
   Future<void> initialize() async {
     await fetchCategories();
-    await fetchLaws(refresh: true);
+    //await fetchLaws(refresh: true);//
     await loadFavorites();
   }
 

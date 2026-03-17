@@ -27,10 +27,9 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
   }
 
   void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-    Provider.of<LawProvider>(context, listen: false).toggleFavorite(widget.law);
+    setState(() => _isFavorite = !_isFavorite);
+    Provider.of<LawProvider>(context, listen: false)
+        .toggleFavorite(widget.law);
   }
 
   void _showDeleteConfirmation(BuildContext context) {
@@ -38,16 +37,22 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete Chapter ${widget.law.chapter}?'),
+        content: Text(
+            'Are you sure you want to delete Chapter ${widget.law.chapter}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () async {
               Navigator.of(ctx).pop();
-              final lawProvider = Provider.of<LawProvider>(context, listen: false);
-              final success = await lawProvider.deleteLaw(widget.law.chapter);
+              final lawProvider =
+              Provider.of<LawProvider>(context, listen: false);
+              final success =
+              await lawProvider.deleteLaw(widget.law.chapter);
               if (success && context.mounted) {
-                Navigator.of(context).pop(); // Go back after deletion
+                Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Law deleted successfully')),
                 );
@@ -55,7 +60,8 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
             },
             child: Text(
               'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              style:
+              TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
@@ -63,118 +69,155 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
     );
   }
 
-  Widget _buildCardSection({
-    required String title,
-    required Widget content,
+  // --------------------------------------------------
+  // FINE ROW
+  // Highlights the 1st offence in red — the one officers
+  // need most often — and shows subsequent offences in a
+  // subdued style below.
+  // --------------------------------------------------
+
+  Widget _buildFineRow({
+    required BuildContext context,
     required UiDensity uiDensity,
-    double elevation = AppTheme.elevationSmall,
+    required String label,
+    required String amount,
+    required bool isFirst,
   }) {
-    return Card(
-      elevation: elevation,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-          AppTheme.getSpacing(AppTheme.borderRadiusMedium, uiDensity),
+    final Color bgColor = isFirst
+        ? Theme.of(context).colorScheme.errorContainer
+        : Theme.of(context).colorScheme.surfaceVariant;
+    final Color textColor = isFirst
+        ? Theme.of(context).colorScheme.onErrorContainer
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final double fontSize = isFirst ? 16 : 14;
+    final FontWeight fontWeight =
+    isFirst ? FontWeight.w600 : FontWeight.w500;
+
+    return Padding(
+      padding: EdgeInsets.only(
+          bottom: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal:
+          AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
+          vertical: AppTheme.getSpacing(
+              isFirst ? AppTheme.baseSpacing12 : AppTheme.baseSpacing8,
+              uiDensity),
         ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(
+              AppTheme.getSpacing(AppTheme.borderRadiusMedium, uiDensity)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
-            SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
-            content,
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: fontSize,
+                color: textColor,
+                fontWeight: fontWeight,
+              ),
+            ),
+            Text(
+              '$amount',
+              style: TextStyle(
+                fontSize: fontSize,
+                color: textColor,
+                fontWeight: fontWeight,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildChip(String text, {Color? color, Color? textColor}) {
-    return Chip(
-      label: Text(
-        text,
+  // --------------------------------------------------
+  // PILL BADGE
+  // Used for category and chapter — compact, inline.
+  // --------------------------------------------------
+
+  Widget _buildPill(
+      BuildContext context,
+      String label,
+      Color bgColor,
+      Color textColor,
+      ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
         style: TextStyle(
-          color: textColor ?? Colors.white,
-          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: textColor,
         ),
       ),
-      backgroundColor: color ?? AppTheme.primaryColor,
     );
   }
 
-  Widget _buildFineItem(UiDensity uiDensity, String label, String amount) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppTheme.getSpacing(AppTheme.baseSpacing12, uiDensity)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(flex: 1, child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
-          Flexible(
-            flex: 2,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppTheme.getSpacing(AppTheme.baseSpacing12, uiDensity),
-                vertical: AppTheme.getSpacing(AppTheme.baseSpacing4, uiDensity),
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(
-                  AppTheme.getSpacing(AppTheme.borderRadiusSmall, uiDensity),
-                ),
-              ),
-              child: Text(
-                amount,
-                textAlign: TextAlign.end,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onErrorContainer,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // --------------------------------------------------
+  // BUILD
+  // --------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final isAdmin = authProvider.isAdmin;
     final themeProvider = Provider.of<ThemeProvider>(context);
     final uiDensity = themeProvider.uiDensity;
 
+    // Collect only non-empty fines in order
+    final fineLabels = [
+      '1st offence',
+      '2nd offence',
+      '3rd offence',
+      '4th offence',
+      '5th offence',
+    ];
     final fines = [
       widget.law.compoundFine,
       widget.law.secondCompoundFine,
       widget.law.thirdCompoundFine,
       widget.law.fourthCompoundFine,
       widget.law.fifthCompoundFine,
-    ].where((e) => e?.isNotEmpty == true).map((e) => e!).toList();
+    ]
+        .asMap()
+        .entries
+        .where((e) => e.value?.isNotEmpty == true)
+        .map((e) => MapEntry(fineLabels[e.key], e.value!))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Law Details'),
         actions: [
+          // Favourite toggle
           IconButton(
-            icon: Icon(_isFavorite ? Icons.star : Icons.star_border,
-                color: _isFavorite ? AppTheme.accentColor : null),
+            icon: Icon(
+              _isFavorite ? Icons.star : Icons.star_border,
+              color: _isFavorite ? AppTheme.accentColor : null,
+            ),
             onPressed: _toggleFavorite,
-            tooltip: _isFavorite ? 'Remove from favorites' : 'Add to favorites',
+            tooltip:
+            _isFavorite ? 'Remove from favorites' : 'Add to favorites',
           ),
-          if (isAdmin)
+
+          // Admin edit / delete menu
+          if (authProvider.isAdmin)
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'edit') {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => LawFormScreen(law: widget.law)));
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => LawFormScreen(law: widget.law)),
+                  );
                 } else if (value == 'delete') {
                   _showDeleteConfirmation(context);
                 }
@@ -182,63 +225,144 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
               itemBuilder: (_) => [
                 const PopupMenuItem(
                   value: 'edit',
-                  child: Row(children: [Icon(Icons.edit), SizedBox(width: 8), Text('Edit')]),
+                  child: Row(children: [
+                    Icon(Icons.edit),
+                    SizedBox(width: 8),
+                    Text('Edit'),
+                  ]),
                 ),
                 PopupMenuItem(
                   value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
-                      const SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                    ],
-                  ),
+                  child: Row(children: [
+                    Icon(Icons.delete,
+                        color: Theme.of(context).colorScheme.error),
+                    const SizedBox(width: 8),
+                    Text('Delete',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
+                  ]),
                 ),
               ],
             ),
         ],
       ),
+
       body: ListView(
-        padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+        padding: EdgeInsets.all(
+            AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
         children: [
-          _buildCardSection(
-            title: 'Category',
-            uiDensity: uiDensity,
-            content: _buildChip(widget.law.category,
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                textColor: Theme.of(context).colorScheme.onSecondaryContainer),
-          ).animate().fadeIn(duration: 400.ms).moveY(begin: -10, end: 0),
-
-          SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing24, uiDensity)),
-
-          _buildCardSection(
-            title: 'Chapter',
-            uiDensity: uiDensity,
-            content: _buildChip(widget.law.chapter),
-          ).animate().fadeIn(duration: 400.ms, delay: 100.ms).moveY(begin: -10, end: 0),
-
-          SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing24, uiDensity)),
-
-          _buildCardSection(
-            title: 'Description',
-            uiDensity: uiDensity,
-            content: Text(widget.law.description, style: Theme.of(context).textTheme.bodyMedium),
-          ).animate().fadeIn(duration: 400.ms, delay: 200.ms).moveY(begin: -10, end: 0),
-
-          if (fines.isNotEmpty) ...[
-            SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing24, uiDensity)),
-            _buildCardSection(
-              title: 'Compound Fines',
-              uiDensity: uiDensity,
-              content: Column(
-                children: fines
-                    .asMap()
-                    .entries
-                    .map((e) => _buildFineItem(uiDensity, 'Offense ${e.key + 1}', e.value))
-                    .toList(),
+          // ── Category + Chapter pills ──────────────────────────
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildPill(
+                context,
+                widget.law.category,
+                Theme.of(context).colorScheme.secondaryContainer,
+                Theme.of(context).colorScheme.onSecondaryContainer,
               ),
-            ).animate().fadeIn(duration: 400.ms, delay: 300.ms).moveY(begin: -10, end: 0),
+              _buildPill(
+                context,
+                widget.law.chapter,
+                Theme.of(context).colorScheme.primaryContainer,
+                Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ],
+          )
+              .animate()
+              .fadeIn(duration: 300.ms)
+              .slideY(begin: -0.05, end: 0),
+
+          SizedBox(
+              height:
+              AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+
+          // ── Title ─────────────────────────────────────────────
+          Text(
+            widget.law.title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              height: 1.3,
+            ),
+          )
+              .animate()
+              .fadeIn(duration: 350.ms, delay: 50.ms)
+              .slideY(begin: -0.05, end: 0),
+
+          SizedBox(
+              height:
+              AppTheme.getSpacing(AppTheme.baseSpacing12, uiDensity)),
+
+          // ── Description ───────────────────────────────────────
+          Text(
+            widget.law.description,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              height: 1.6,
+            ),
+          )
+              .animate()
+              .fadeIn(duration: 350.ms, delay: 100.ms)
+              .slideY(begin: -0.05, end: 0),
+
+          // ── Fines section ─────────────────────────────────────
+          if (fines.isNotEmpty) ...[
+            SizedBox(
+                height: AppTheme.getSpacing(
+                    AppTheme.baseSpacing24, uiDensity)),
+
+            Divider(
+              color: Theme.of(context)
+                  .colorScheme
+                  .outlineVariant
+                  .withOpacity(0.5),
+              height: 1,
+            ),
+
+            SizedBox(
+                height: AppTheme.getSpacing(
+                    AppTheme.baseSpacing16, uiDensity)),
+
+            // "Compound fines" label
+            Text(
+              'COMPOUND FINES',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.secondary,
+                letterSpacing: 0.8,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+                .animate()
+                .fadeIn(duration: 300.ms, delay: 150.ms),
+
+            SizedBox(
+                height: AppTheme.getSpacing(
+                    AppTheme.baseSpacing12, uiDensity)),
+
+            // Fine rows
+            ...fines.asMap().entries.map((entry) {
+              final index = entry.key;
+              final label = entry.value.key;
+              final amount = entry.value.value;
+              return _buildFineRow(
+                context: context,
+                uiDensity: uiDensity,
+                label: label,
+                amount: amount,
+                isFirst: index == 0,
+              )
+                  .animate()
+                  .fadeIn(
+                duration: 350.ms,
+                delay: Duration(milliseconds: 180 + index * 60),
+              )
+                  .slideY(begin: 0.05, end: 0);
+            }),
           ],
+
+          // Bottom padding so last item isn't flush against nav bar
+          const SizedBox(height: 32),
         ],
       ),
     );

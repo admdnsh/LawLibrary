@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:law_library/providers/auth_provider.dart';
 import 'package:law_library/providers/law_provider.dart';
 import 'package:law_library/screens/home_screen.dart';
-import 'package:law_library/theme/app_theme.dart';
+import 'package:law_library/screens/onboarding_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -14,8 +15,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -23,86 +22,141 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initialize() async {
-    // Initialize providers
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final lawProvider = Provider.of<LawProvider>(context, listen: false);
-    
+
     try {
-      // Initialize auth first (check if user is already logged in)
       await authProvider.initializeAuth();
-      
-      // Initialize laws data
-      await lawProvider.initialize();
-    } catch (e) {
-      // If there's an error, we'll still continue to the home screen
-      // The error will be handled in the respective providers
-    }
-    
-    // Ensure splash screen shows for at least 2 seconds
+      await lawProvider.fetchCategories();
+      await lawProvider.loadFavorites();
+    } catch (_) {}
+
     await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      // Navigate to home screen
-      Future.delayed(const Duration(milliseconds: 500), () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      });
-    }
+
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final onboardingShown = prefs.getBool('onboarding_shown_v1') ?? false;
+
+    if (!mounted) return;
+
+    final nextScreen =
+    onboardingShown ? const HomeScreen() : const OnboardingScreen();
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, animation, __) => nextScreen,
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        child: Stack(
           children: [
-            // App icon/logo
-            Icon(
-              Icons.balance,
-              size: 80,
-              color: AppTheme.primaryColor,
-            )
-            .animate()
-            .scale(
-              duration: const Duration(milliseconds: 600),
-              curve: Curves.easeOutBack,
-              begin: const Offset(0.2, 0.2),
-              end: const Offset(1.0, 1.0),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // App name
-            Text(
-              'Law Library',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
+            // ── Centred logo + title ─────────────────────────────
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo
+                  Image.asset(
+                    'assets/logo.png',
+                    width: 96,
+                    height: 96,
+                  )
+                      .animate()
+                      .scale(
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutBack,
+                    begin: const Offset(0.2, 0.2),
+                    end: const Offset(1.0, 1.0),
+                  )
+                      .fadeIn(duration: const Duration(milliseconds: 400)),
+
+                  const SizedBox(height: 24),
+
+                  // App name
+                  Text(
+                    'Law Library',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(
+                    duration: const Duration(milliseconds: 500),
+                    delay: const Duration(milliseconds: 300),
+                  )
+                      .slideY(begin: 0.1, end: 0),
+
+                  const SizedBox(height: 6),
+
+                  // Subtitle
+                  Text(
+                    'Road Offences Reference',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                      letterSpacing: 0.3,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(
+                    duration: const Duration(milliseconds: 500),
+                    delay: const Duration(milliseconds: 450),
+                  ),
+                ],
               ),
-            )
-            .animate()
-            .fadeIn(
-              duration: const Duration(milliseconds: 600),
-              delay: const Duration(milliseconds: 300),
             ),
-            
-            const SizedBox(height: 48),
-            
-            // Loading indicator
-            if (_isLoading)
-              const CircularProgressIndicator()
-              .animate()
-              .fadeIn(
-                duration: const Duration(milliseconds: 400),
-                delay: const Duration(milliseconds: 600),
+
+            // ── Loading spinner + version at bottom ──────────────
+            Positioned(
+              bottom: 32,
+              left: 0,
+              right: 0,
+              child: Column(
+                children: [
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      .animate()
+                      .fadeIn(
+                    duration: const Duration(milliseconds: 400),
+                    delay: const Duration(milliseconds: 600),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    'v1.0.0',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withOpacity(0.5),
+                      fontSize: 11,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(
+                    duration: const Duration(milliseconds: 400),
+                    delay: const Duration(milliseconds: 700),
+                  ),
+                ],
               ),
+            ),
           ],
         ),
       ),

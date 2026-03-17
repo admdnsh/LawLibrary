@@ -17,6 +17,18 @@ class LawList extends StatefulWidget {
 }
 
 class _LawListState extends State<LawList> {
+  // Suggested keywords shown in the no-results state
+  static const List<String> _suggestions = [
+    'Seatbelt',
+    'Speeding',
+    'Mobile phone',
+    'Parking',
+    'Helmet',
+    'Lane',
+    'Roadtax',
+    'Insurance',
+  ];
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -26,41 +38,96 @@ class _LawListState extends State<LawList> {
         final themeProvider = Provider.of<ThemeProvider>(context);
         final uiDensity = themeProvider.uiDensity;
 
-        // Loading state
+        // ── Loading state ────────────────────────────────────────
         if (lawProvider.isLoading && lawProvider.laws.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // No results state
+        // ── No results state ─────────────────────────────────────
         if (lawProvider.laws.isEmpty) {
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.search_off,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
-                ),
-                SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
-                Text(
-                  l10n.searchNoResultsTitle,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
-                Text(
-                  l10n.searchNoResultsSubtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).textTheme.bodySmall?.color,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.search_off,
+                    size: 56,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .secondary
+                        .withOpacity(0.4),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ).animate().fadeIn().scale(),
+                  SizedBox(
+                      height: AppTheme.getSpacing(
+                          AppTheme.baseSpacing16, uiDensity)),
+
+                  // Title
+                  Text(
+                    'No results found',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                      height:
+                      AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+
+                  // Helpful hint
+                  Text(
+                    'Try searching by offence title, chapter number, or category.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  SizedBox(
+                      height: AppTheme.getSpacing(24, uiDensity)),
+
+                  // "Try searching for" label
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Try searching for:',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Suggestion chips — tapping one triggers a new search
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _suggestions.map((suggestion) {
+                        return ActionChip(
+                          label: Text(suggestion),
+                          onPressed: () {
+                            lawProvider.setSearchQuery(suggestion);
+                          },
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          labelStyle: Theme.of(context).textTheme.bodySmall,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ).animate().fadeIn().scale(),
+            ),
           );
         }
 
-        // Main list with pagination
+        // ── Main list with pagination ─────────────────────────────
         return Column(
           children: [
             Expanded(
@@ -84,10 +151,13 @@ class _LawListState extends State<LawList> {
                           ),
                         );
                       },
-                    ).animate().fadeIn(
+                    )
+                        .animate()
+                        .fadeIn(
                       duration: const Duration(milliseconds: 400),
                       delay: Duration(milliseconds: index * 50),
-                    ).slideX(
+                    )
+                        .slideX(
                       begin: 0.1,
                       end: 0,
                       duration: const Duration(milliseconds: 400),
@@ -98,7 +168,8 @@ class _LawListState extends State<LawList> {
                 ),
               ),
             ),
-            // Pagination Controls
+
+            // ── Pagination controls ───────────────────────────────
             SafeArea(
               top: false,
               child: Padding(
@@ -134,7 +205,8 @@ class _LawListState extends State<LawList> {
                         alignment: Alignment.center,
                         child: Text(
                           '${lawProvider.currentPage}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style:
+                          Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -153,20 +225,26 @@ class _LawListState extends State<LawList> {
                 ),
               ),
             ),
-            // Error message
+
+            // ── Error message ─────────────────────────────────────
             if (lawProvider.error != null)
               Container(
-                padding: EdgeInsets.all(AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
+                padding: EdgeInsets.all(
+                    AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
                 color: Theme.of(context).colorScheme.errorContainer,
                 child: Row(
                   children: [
-                    Icon(Icons.error, color: Theme.of(context).colorScheme.error),
-                    SizedBox(width: AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+                    Icon(Icons.error,
+                        color: Theme.of(context).colorScheme.error),
+                    SizedBox(
+                        width: AppTheme.getSpacing(
+                            AppTheme.baseSpacing8, uiDensity)),
                     Expanded(
                       child: Text(
                         l10n.searchError(lawProvider.error!),
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onErrorContainer,
+                          color:
+                          Theme.of(context).colorScheme.onErrorContainer,
                         ),
                       ),
                     ),
