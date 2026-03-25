@@ -8,12 +8,14 @@ class AppSearchBar extends StatefulWidget {
   final TextEditingController controller;
   final Function(String) onSearch;
   final String? hintText;
+  final FocusNode? focusNode;
 
   const AppSearchBar({
     super.key,
     required this.controller,
     required this.onSearch,
     this.hintText,
+    this.focusNode,
   });
 
   @override
@@ -60,6 +62,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
       ),
       child: TextField(
         controller: widget.controller,
+        focusNode: widget.focusNode,
         decoration: InputDecoration(
           hintText: widget.hintText ?? l10n.searchHint, // localized default
           prefixIcon: const Icon(Icons.search),

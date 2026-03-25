@@ -13,6 +13,7 @@ class LawProvider extends ChangeNotifier {
   List<String> _categories = [];
 
   bool _isLoading = false;
+  bool _isLoadingMore = false;
   String? _error;
 
   int _currentPage = 1;
@@ -28,6 +29,7 @@ class LawProvider extends ChangeNotifier {
   List<String> get categories => _categories;
 
   bool get isLoading => _isLoading;
+  bool get isLoadingMore => _isLoadingMore;
   String? get error => _error;
 
   int get currentPage => _currentPage;
@@ -40,20 +42,23 @@ class LawProvider extends ChangeNotifier {
   // ------------------- Init -------------------
   Future<void> initialize() async {
     await fetchCategories();
-    //await fetchLaws(refresh: true);//
+    //await fetchLaws(reset: true);//
     await loadFavorites();
   }
 
   // ------------------- Fetch Laws -------------------
-  Future<void> fetchLaws({bool refresh = false}) async {
-    if (_isLoading) return;
-
-    if (refresh) {
-      _currentPage = _currentPage < 1 ? 1 : _currentPage;
+  Future<void> fetchLaws({bool reset = false}) async {
+    if (reset) {
+      if (_isLoading) return;
+      _laws = [];
       _hasMorePages = true;
+      _isLoading = true;
+      _isLoadingMore = false;
+    } else {
+      if (_isLoading || _isLoadingMore || !_hasMorePages) return;
+      _isLoadingMore = true;
     }
 
-    _isLoading = true;
     _error = null;
     notifyListeners();
 
@@ -65,7 +70,11 @@ class LawProvider extends ChangeNotifier {
         filterCategory: _selectedCategory,
       );
 
-      _laws = result;
+      if (reset) {
+        _laws = result;
+      } else {
+        _laws = [..._laws, ...result];
+      }
       _hasMorePages = result.length == _itemsPerPage;
 
       _syncFavorites();
@@ -73,6 +82,7 @@ class LawProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
+      _isLoadingMore = false;
       notifyListeners();
     }
   }
@@ -92,34 +102,26 @@ class LawProvider extends ChangeNotifier {
   void setSearchQuery(String? query) {
     _searchQuery = query?.isNotEmpty == true ? query : null;
     _currentPage = 1;
-    _hasMorePages = true;
-    fetchLaws(refresh: true);
+    fetchLaws(reset: true);
   }
 
   void setFilterCategory(String? category) {
     _selectedCategory = category;
     _currentPage = 1;
-    _hasMorePages = true;
-    fetchLaws(refresh: true);
+    fetchLaws(reset: true);
   }
 
   // ------------------- Pagination -------------------
   Future<void> nextPage() async {
-    if (!_hasMorePages || _isLoading) return;
+    if (!_hasMorePages || _isLoading || _isLoadingMore) return;
     _currentPage++;
-    await fetchLaws(refresh: true);
-  }
-
-  Future<void> previousPage() async {
-    if (_currentPage <= 1 || _isLoading) return;
-    _currentPage--;
-    await fetchLaws(refresh: true);
+    await fetchLaws(reset: false);
   }
 
   void setPage(int page) {
     if (page < 1 || _isLoading) return;
     _currentPage = page;
-    fetchLaws(refresh: true);
+    fetchLaws(reset: true);
   }
 
   // ------------------- Favorites -------------------
@@ -186,7 +188,7 @@ class LawProvider extends ChangeNotifier {
     try {
       final success = await _apiService.createLaw(law);
       if (success) {
-        await fetchLaws(refresh: true);
+        await fetchLaws(reset: true);
       }
       return success;
     } catch (e) {
@@ -203,7 +205,7 @@ class LawProvider extends ChangeNotifier {
         originalChapter: originalChapter,
       );
       if (success) {
-        await fetchLaws(refresh: true);
+        await fetchLaws(reset: true);
       }
       return success;
     } catch (e) {

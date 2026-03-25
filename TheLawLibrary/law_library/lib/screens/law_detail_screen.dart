@@ -7,6 +7,7 @@ import 'package:law_library/screens/law_form_screen.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/providers/theme_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class LawDetailScreen extends StatefulWidget {
   final Law law;
@@ -33,16 +34,16 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
   }
 
   void _showDeleteConfirmation(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: Text(
-            'Are you sure you want to delete Chapter ${widget.law.chapter}?'),
+        title: Text(l10n.confirmDeleteTitle),
+        content: Text(l10n.confirmDeleteMessage(widget.law.chapter)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -59,7 +60,7 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
               }
             },
             child: Text(
-              'Delete',
+              l10n.delete,
               style:
               TextStyle(color: Theme.of(context).colorScheme.error),
             ),
@@ -171,14 +172,15 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final uiDensity = themeProvider.uiDensity;
+    final l10n = AppLocalizations.of(context)!;
 
     // Collect only non-empty fines in order
     final fineLabels = [
-      '1st offence',
-      '2nd offence',
-      '3rd offence',
-      '4th offence',
-      '5th offence',
+      l10n.lawOffence1,
+      l10n.lawOffence2,
+      l10n.lawOffence3,
+      l10n.lawOffence4,
+      l10n.lawOffence5,
     ];
     final fines = [
       widget.law.compoundFine,
@@ -195,7 +197,7 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Law Details'),
+        title: Text(l10n.lawDetailsTitle),
         actions: [
           // Favourite toggle
           IconButton(
@@ -326,7 +328,7 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
 
             // "Compound fines" label
             Text(
-              'COMPOUND FINES',
+              l10n.compoundFines,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: Theme.of(context).colorScheme.secondary,
                 letterSpacing: 0.8,

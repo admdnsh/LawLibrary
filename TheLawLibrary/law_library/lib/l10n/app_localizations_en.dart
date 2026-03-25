@@ -144,7 +144,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutCreditsTitle => 'Credits';
 
   @override
-  String get aboutCreditsBody => 'Project by: Muhammad Adam Danish bin Shukri\n\nUTB Supervisors:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nHost Supervisors:\nASP Dk Husmawati Pg Hussin\nASP Pg Hjh Nafiah Pg Hj Asli';
+  String get aboutCreditsBody => 'Project by: Muhammad Adam Danish bin Shukri\n\nUTB Supervisors:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nHost Supervisors:\nASP Pg Hjh Nafiah Pg Hj Asli';
 
   @override
   String get homeTitle => 'Law Library';
@@ -307,5 +307,123 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String searchError(Object errorMessage) {
     return 'Error: $errorMessage';
+  }
+
+  @override
+  String get recentSearches => 'Recent';
+
+  @override
+  String get clearSearches => 'Clear';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get noResultsHint => 'Try searching by offence title, chapter number, or category.';
+
+  @override
+  String get noResultsTryLabel => 'Try searching for:';
+
+  @override
+  String get compoundFines => 'COMPOUND FINES';
+
+  @override
+  String get tabDashboard => 'Dashboard';
+
+  @override
+  String get dashboardLawsByCategory => 'Laws by Category';
+
+  @override
+  String get dashboardRecentSearches => 'Recent Searches';
+
+  @override
+  String get dashboardError => 'Could not load dashboard';
+
+  @override
+  String get dashboardErrorHint => 'Check your connection and try again.';
+
+  @override
+  String get dashboardRetry => 'Retry';
+
+  @override
+  String get dashboardTotalLaws => 'Total Laws';
+
+  @override
+  String get dashboardTotalLawsSubtitle => 'Road offences in database';
+
+  @override
+  String get splashSubtitle => 'Road Offences Reference';
+
+  @override
+  String get onboardingSlide1Title => 'Find offences instantly';
+
+  @override
+  String get onboardingSlide1Desc => 'Search by keyword, chapter number, or category to pull up the exact road offence you need — even under pressure at a roadblock.';
+
+  @override
+  String get onboardingSlide2Title => 'Save your most used laws';
+
+  @override
+  String get onboardingSlide2Desc => 'Swipe any result to favourite it. Your saved offences are always one tap away, even without an internet connection.';
+
+  @override
+  String get onboardingSlide3Title => 'Ready to go';
+
+  @override
+  String get onboardingSlide3Desc => 'Everything you need is right here. Stay efficient, stay informed, and let the app do the looking up.';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingGetStarted => 'Get Started';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get dashboardNoSearches => 'No searches yet — start searching to see history here';
+
+  @override
+  String get dashboardNoCategoryData => 'No category data available';
+
+  @override
+  String get lawDetailsTitle => 'Law Details';
+
+  @override
+  String get confirmDeleteTitle => 'Confirm Delete';
+
+  @override
+  String confirmDeleteMessage(Object chapter) {
+    return 'Are you sure you want to delete Chapter $chapter?';
+  }
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get lawOffence1 => '1st Offence';
+
+  @override
+  String get lawOffence2 => '2nd Offence';
+
+  @override
+  String get lawOffence3 => '3rd Offence';
+
+  @override
+  String get lawOffence4 => '4th Offence';
+
+  @override
+  String get lawOffence5 => '5th Offence';
+
+  @override
+  String searchFoundPage(Object page, num count, Object query) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'results',
+      one: 'result',
+    );
+    return 'Page $page · $count $_temp0 for \"$query\"';
   }
 }

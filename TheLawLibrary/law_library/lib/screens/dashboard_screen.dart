@@ -5,6 +5,7 @@ import 'package:law_library/services/recent_searches_service.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -80,10 +81,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final themeProvider = context.watch<ThemeProvider>();
     final uiDensity = themeProvider.uiDensity;
     final spacing = AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity);
+    final l10n = AppLocalizations.of(context)!;
 
     return FutureBuilder<_DashboardData>(
       future: _dashboardFuture,
       builder: (context, snapshot) {
+        final l10n = AppLocalizations.of(context)!;
         // ── Loading ────────────────────────────────────────────
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -105,12 +108,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           .withOpacity(0.4)),
                   const SizedBox(height: 16),
                   Text(
-                    'Could not load dashboard',
+                    l10n.dashboardError,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Check your connection and try again.',
+                    l10n.dashboardErrorHint,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.secondary,
                     ),
@@ -120,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   FilledButton.icon(
                     onPressed: _refresh,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    label: Text(l10n.dashboardRetry),
                   ),
                 ],
               ),
@@ -143,7 +146,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // ── Laws by category ─────────────────────────────
               _buildSectionHeader(context, Icons.category_outlined,
-                  'Laws by Category'),
+                  l10n.dashboardLawsByCategory),
               SizedBox(
                   height: AppTheme.getSpacing(AppTheme.baseSpacing12, uiDensity)),
               _buildCategoryList(context, uiDensity, data.categoryCounts,
@@ -153,7 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // ── Most searched terms ──────────────────────────
               _buildSectionHeader(
-                  context, Icons.history, 'Recent Searches'),
+                  context, Icons.history, l10n.dashboardRecentSearches),
               SizedBox(
                   height: AppTheme.getSpacing(AppTheme.baseSpacing12, uiDensity)),
               _buildRecentSearches(context, uiDensity, data.recentSearches),
@@ -172,6 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildTotalLawsCard(
       BuildContext context, UiDensity uiDensity, int totalLaws) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(
           AppTheme.getSpacing(AppTheme.baseSpacing24, uiDensity)),
@@ -187,7 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total Laws',
+                  l10n.dashboardTotalLaws,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context)
                         .colorScheme
@@ -208,7 +212,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Road offences in database',
+                  l10n.dashboardTotalLawsSubtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context)
                         .colorScheme
@@ -241,6 +245,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildSectionHeader(
       BuildContext context, IconData icon, String title) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Icon(icon,
@@ -266,8 +271,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       List<MapEntry<String, int>> categoryCounts,
       int totalLaws,
       ) {
+    final l10n = AppLocalizations.of(context)!;
     if (categoryCounts.isEmpty) {
-      return _buildEmptyState(context, 'No category data available');
+      return _buildEmptyState(context, l10n.dashboardNoCategoryData);
     }
 
     final maxCount =
@@ -375,9 +381,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       UiDensity uiDensity,
       List<String> searches,
       ) {
+    final l10n = AppLocalizations.of(context)!;
     if (searches.isEmpty) {
       return _buildEmptyState(
-          context, 'No searches yet — start searching to see history here');
+          context, l10n.dashboardNoSearches);
     }
 
     return Container(

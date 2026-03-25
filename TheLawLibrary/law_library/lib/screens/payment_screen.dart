@@ -51,13 +51,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
           // Header with payment icon
           Row(
             children: [
-              Icon(Icons.payment, size: 32, color: AppTheme.primaryColor),
+              Icon(Icons.payment, size: 32, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 12),
               Text(
                 l10n.paymentInformation,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
                 ),
               ),
             ],
@@ -76,7 +75,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.08),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -88,7 +87,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Row(
                   children: [
                     Icon(Icons.credit_card,
-                        color: AppTheme.primaryColor, size: 24),
+                        color: Theme.of(context).colorScheme.primary, size: 24),
                     const SizedBox(width: 8),
                     Text(
                       l10n.whereToPay,
@@ -97,7 +96,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           .titleLarge
                           ?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryColor),
+                          color: Theme.of(context).colorScheme.onSurface),
                     ),
                   ],
                 ),
@@ -132,17 +131,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.surfaceVariant,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
                     ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(Icons.info_outline,
-                          color: AppTheme.primaryColor, size: 20),
+                          color: Theme.of(context).colorScheme.secondary, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -151,7 +150,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               .textTheme
                               .bodyMedium
                               ?.copyWith(
-                              color: AppTheme.primaryColor,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w500),
                         ),
                       ),
@@ -178,7 +177,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.08),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -190,7 +189,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Row(
                   children: [
                     Icon(Icons.play_circle_outline,
-                        color: AppTheme.primaryColor, size: 24),
+                        color: Theme.of(context).colorScheme.primary, size: 24),
                     const SizedBox(width: 8),
                     Text(
                       l10n.onlinePaymentGuide,
@@ -199,7 +198,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           .titleLarge
                           ?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryColor),
+                          color: Theme.of(context).colorScheme.onSurface),
                     ),
                   ],
                 ),
@@ -254,7 +253,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           _videoController.value.isPlaying
                               ? Icons.pause
                               : Icons.play_arrow,
-                          color: AppTheme.primaryColor,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                         onPressed: () {
                           setState(() {
@@ -267,7 +266,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         },
                       ),
                       IconButton(
-                        icon: Icon(Icons.replay, color: AppTheme.primaryColor),
+                        icon: Icon(Icons.replay, color: Theme.of(context).colorScheme.primary),
                         onPressed: () {
                           _videoController.seekTo(Duration.zero);
                           _videoController.play();
@@ -300,7 +299,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppTheme.primaryColor, size: 20),
+        Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -310,7 +309,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 4),

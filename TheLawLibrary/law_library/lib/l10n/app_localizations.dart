@@ -368,7 +368,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutCreditsBody.
   ///
   /// In en, this message translates to:
-  /// **'Project by: Muhammad Adam Danish bin Shukri\n\nUTB Supervisors:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nHost Supervisors:\nASP Dk Husmawati Pg Hussin\nASP Pg Hjh Nafiah Pg Hj Asli'**
+  /// **'Project by: Muhammad Adam Danish bin Shukri\n\nUTB Supervisors:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nHost Supervisors:\nASP Pg Hjh Nafiah Pg Hj Asli'**
   String get aboutCreditsBody;
 
   /// No description provided for @homeTitle.
@@ -652,6 +652,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error: {errorMessage}'**
   String searchError(Object errorMessage);
+
+  /// No description provided for @recentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get recentSearches;
+
+  /// No description provided for @clearSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearSearches;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// No description provided for @noResultsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try searching by offence title, chapter number, or category.'**
+  String get noResultsHint;
+
+  /// No description provided for @noResultsTryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Try searching for:'**
+  String get noResultsTryLabel;
+
+  /// No description provided for @compoundFines.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPOUND FINES'**
+  String get compoundFines;
+
+  /// No description provided for @tabDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get tabDashboard;
+
+  /// No description provided for @dashboardLawsByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Laws by Category'**
+  String get dashboardLawsByCategory;
+
+  /// No description provided for @dashboardRecentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Searches'**
+  String get dashboardRecentSearches;
+
+  /// No description provided for @dashboardError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load dashboard'**
+  String get dashboardError;
+
+  /// No description provided for @dashboardErrorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again.'**
+  String get dashboardErrorHint;
+
+  /// No description provided for @dashboardRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get dashboardRetry;
+
+  /// No description provided for @dashboardTotalLaws.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Laws'**
+  String get dashboardTotalLaws;
+
+  /// No description provided for @dashboardTotalLawsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Road offences in database'**
+  String get dashboardTotalLawsSubtitle;
+
+  /// No description provided for @splashSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Road Offences Reference'**
+  String get splashSubtitle;
+
+  /// No description provided for @onboardingSlide1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Find offences instantly'**
+  String get onboardingSlide1Title;
+
+  /// No description provided for @onboardingSlide1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by keyword, chapter number, or category to pull up the exact road offence you need — even under pressure at a roadblock.'**
+  String get onboardingSlide1Desc;
+
+  /// No description provided for @onboardingSlide2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your most used laws'**
+  String get onboardingSlide2Title;
+
+  /// No description provided for @onboardingSlide2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe any result to favourite it. Your saved offences are always one tap away, even without an internet connection.'**
+  String get onboardingSlide2Desc;
+
+  /// No description provided for @onboardingSlide3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to go'**
+  String get onboardingSlide3Title;
+
+  /// No description provided for @onboardingSlide3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you need is right here. Stay efficient, stay informed, and let the app do the looking up.'**
+  String get onboardingSlide3Desc;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboardingGetStarted;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @dashboardNoSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'No searches yet — start searching to see history here'**
+  String get dashboardNoSearches;
+
+  /// No description provided for @dashboardNoCategoryData.
+  ///
+  /// In en, this message translates to:
+  /// **'No category data available'**
+  String get dashboardNoCategoryData;
+
+  /// No description provided for @lawDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Law Details'**
+  String get lawDetailsTitle;
+
+  /// No description provided for @confirmDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get confirmDeleteTitle;
+
+  /// No description provided for @confirmDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete Chapter {chapter}?'**
+  String confirmDeleteMessage(Object chapter);
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @lawOffence1.
+  ///
+  /// In en, this message translates to:
+  /// **'1st Offence'**
+  String get lawOffence1;
+
+  /// No description provided for @lawOffence2.
+  ///
+  /// In en, this message translates to:
+  /// **'2nd Offence'**
+  String get lawOffence2;
+
+  /// No description provided for @lawOffence3.
+  ///
+  /// In en, this message translates to:
+  /// **'3rd Offence'**
+  String get lawOffence3;
+
+  /// No description provided for @lawOffence4.
+  ///
+  /// In en, this message translates to:
+  /// **'4th Offence'**
+  String get lawOffence4;
+
+  /// No description provided for @lawOffence5.
+  ///
+  /// In en, this message translates to:
+  /// **'5th Offence'**
+  String get lawOffence5;
+
+  /// No description provided for @searchFoundPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} · {count} {count, plural, one{result} other{results}} for \"{query}\"'**
+  String searchFoundPage(Object page, num count, Object query);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -33,9 +33,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     });
   }
 
-  List<Law> _filterFavorites(List<Law> allLaws) {
-    final favorites = allLaws.where((law) => law.isFavorite).toList();
-
+  List<Law> _filterFavorites(List<Law> favorites) {
     if (_searchQuery.isEmpty) return favorites;
 
     final searchLower = _searchQuery.toLowerCase();
@@ -56,8 +54,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     return Consumer<LawProvider>(
       builder: (context, lawProvider, _) {
-        final allLaws = lawProvider.laws;
-        final filteredFavorites = _filterFavorites(allLaws);
+        final filteredFavorites = _filterFavorites(lawProvider.favorites);
 
         return Column(
           children: [

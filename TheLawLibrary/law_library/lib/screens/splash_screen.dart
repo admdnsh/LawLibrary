@@ -6,6 +6,7 @@ import 'package:law_library/providers/law_provider.dart';
 import 'package:law_library/screens/home_screen.dart';
 import 'package:law_library/screens/onboarding_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -55,6 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -84,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
                   // App name
                   Text(
-                    'Law Library',
+                    l10n.appTitle,
                     style: Theme.of(context)
                         .textTheme
                         .headlineMedium
@@ -104,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
                   // Subtitle
                   Text(
-                    'Road Offences Reference',
+                    l10n.splashSubtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.secondary,
                       letterSpacing: 0.3,

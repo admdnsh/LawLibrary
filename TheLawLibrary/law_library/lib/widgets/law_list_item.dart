@@ -25,7 +25,7 @@ class LawListItem extends StatelessWidget {
     // Determine fine display — show compound fine if available, otherwise N/A
     final bool hasFine =
         law.compoundFine != null && law.compoundFine!.trim().isNotEmpty;
-    final String fineLabel = hasFine ? 'BND ${law.compoundFine}' : 'No fine';
+    final String fineLabel = hasFine ? '${law.compoundFine}' : 'No fine';
 
     return Padding(
       padding: EdgeInsets.only(

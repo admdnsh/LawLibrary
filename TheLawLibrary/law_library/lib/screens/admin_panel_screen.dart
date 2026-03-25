@@ -8,6 +8,7 @@ import 'package:law_library/providers/law_provider.dart';
 import 'package:law_library/providers/theme_provider.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/screens/law_form_screen.dart';
+import 'package:law_library/services/api_service.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -19,13 +20,18 @@ class AdminPanelScreen extends StatefulWidget {
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ApiService _apiService = ApiService();
 
   Timer? _debounce;
+  Future<int>? _totalCountFuture;
+  String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
-    context.read<LawProvider>().fetchLaws(refresh: true);
+    _totalCountFuture = _apiService.getTotalLawCount();
+    final provider = context.read<LawProvider>();
+    provider.setFilterCategory(null);
   }
 
   @override
@@ -39,9 +45,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   void _onSearchChanged(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
-      context.read<LawProvider>().setSearchQuery(query);
-      context.read<LawProvider>().fetchLaws(refresh: true);
+      context.read<LawProvider>().setSearchQuery(query.isEmpty ? null : query);
     });
+  }
+
+  void _onCategoryChanged(String? category) {
+    setState(() => _selectedCategory = category);
+    context.read<LawProvider>().setFilterCategory(category);
   }
 
   Future<bool> _confirmDelete(BuildContext context) async {
@@ -49,9 +59,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Delete Law'),
-        content: const Text(
-          'This action cannot be undone.',
-        ),
+        content: const Text('This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -59,7 +67,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(
+              'Delete',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.error),
+            ),
           ),
         ],
       ),
@@ -67,12 +79,155 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         false;
   }
 
+  // --------------------------------------------------
+  // STATS BANNER
+  // --------------------------------------------------
+
+  Widget _buildStatsBanner(
+      BuildContext context, LawProvider lawProvider, double spacing) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(spacing, spacing, spacing, 0),
+      child: Row(
+        children: [
+          // Total laws
+          Expanded(
+            child: FutureBuilder<int>(
+              future: _totalCountFuture,
+              builder: (context, snapshot) {
+                final count = snapshot.data ?? 0;
+                return _buildStatCard(
+                  context,
+                  icon: Icons.gavel_outlined,
+                  label: 'Total Laws',
+                  value: snapshot.connectionState == ConnectionState.waiting
+                      ? '—'
+                      : '$count',
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Total categories
+          Expanded(
+            child: _buildStatCard(
+              context,
+              icon: Icons.category_outlined,
+              label: 'Categories',
+              value: '${lawProvider.categories.length}',
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Current page results
+          Expanded(
+            child: _buildStatCard(
+              context,
+              icon: Icons.list_outlined,
+              label: 'This Page',
+              value: '${lawProvider.laws.length}',
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.05, end: 0);
+  }
+
+  Widget _buildStatCard(
+      BuildContext context, {
+        required IconData icon,
+        required String label,
+        required String value,
+      }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(AppTheme.borderRadiusMedium),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon,
+              size: 16,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onPrimaryContainer
+                  .withOpacity(0.7)),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onPrimaryContainer
+                  .withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --------------------------------------------------
+  // CATEGORY FILTER CHIPS
+  // --------------------------------------------------
+
+  Widget _buildCategoryFilter(
+      BuildContext context, LawProvider lawProvider, double spacing) {
+    if (lawProvider.categories.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: spacing),
+        children: [
+          // All chip
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: const Text('All'),
+              selected: _selectedCategory == null,
+              onSelected: (_) => _onCategoryChanged(null),
+              selectedColor: Theme.of(context).colorScheme.primaryContainer,
+              checkmarkColor:
+              Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+          // Category chips
+          ...lawProvider.categories.map((category) => Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: Text(category),
+              selected: _selectedCategory == category,
+              onSelected: (_) => _onCategoryChanged(
+                  _selectedCategory == category ? null : category),
+              selectedColor:
+              Theme.of(context).colorScheme.primaryContainer,
+              checkmarkColor:
+              Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  // --------------------------------------------------
+  // BUILD
+  // --------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final uiDensity = themeProvider.uiDensity;
-    final spacing =
-    AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity);
+    final spacing = AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Admin Panel')),
@@ -83,10 +238,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           }
 
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// 🔍 Search Bar
+              // ── Stats banner ─────────────────────────────────
+              _buildStatsBanner(context, lawProvider, spacing),
+
+              SizedBox(height: spacing),
+
+              // ── Search bar ───────────────────────────────────
               Padding(
-                padding: EdgeInsets.all(spacing),
+                padding: EdgeInsets.symmetric(horizontal: spacing),
                 child: TextField(
                   controller: _searchController,
                   onChanged: _onSearchChanged,
@@ -94,8 +255,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     labelText: 'Search laws',
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
-                    fillColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                    fillColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         AppTheme.getSpacing(
@@ -103,61 +265,117 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       ),
                       borderSide: BorderSide.none,
                     ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        _onSearchChanged('');
+                      },
+                    )
+                        : null,
                   ),
                 ),
               ),
 
-              /// 📭 Empty State
+              SizedBox(
+                  height:
+                  AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+
+              // ── Category filter chips ─────────────────────────
+              _buildCategoryFilter(context, lawProvider, spacing),
+
+              SizedBox(
+                  height:
+                  AppTheme.getSpacing(AppTheme.baseSpacing8, uiDensity)),
+
+              // ── Active filter indicator ──────────────────────
+              if (_selectedCategory != null)
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: spacing),
+                  child: Row(
+                    children: [
+                      Icon(Icons.filter_list,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.secondary),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          'Filtering by: $_selectedCategory',
+                          style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => _onCategoryChanged(null),
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // ── Empty state ──────────────────────────────────
               if (lawProvider.laws.isEmpty && !lawProvider.isLoading)
                 Expanded(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.search_off, size: 64),
+                        Icon(Icons.search_off,
+                            size: 56,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withOpacity(0.4)),
                         const SizedBox(height: 16),
                         Text(
                           'No laws found',
-                          style:
-                          Theme.of(context).textTheme.headlineSmall,
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Try adjusting your search or add a new law.',
+                        Text(
+                          _selectedCategory != null
+                              ? 'No laws in "$_selectedCategory" category'
+                              : 'Try adjusting your search or add a new law.',
+                          style:
+                          Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondary,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton.icon(
+                        FilledButton.icon(
                           icon: const Icon(Icons.add),
                           label: const Text('Add Law'),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const LawFormScreen(),
-                              ),
-                            );
-                          },
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const LawFormScreen()),
+                          ),
                         ),
                       ],
                     ).animate().fadeIn().scale(),
                   ),
                 )
 
-              /// 📜 Law List
+              // ── Law list ─────────────────────────────────────
               else
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: () =>
-                        lawProvider.fetchLaws(refresh: true),
+                    onRefresh: () => lawProvider.fetchLaws(reset: true),
                     child: ListView.builder(
                       controller: _scrollController,
-                      padding: EdgeInsets.fromLTRB(
-                        spacing,
-                        0,
-                        spacing,
-                        90, // FAB spacing
-                      ),
+                      padding: EdgeInsets.fromLTRB(spacing, 8, spacing, 90),
                       itemCount: lawProvider.laws.length,
                       itemBuilder: (context, index) {
                         final Law law = lawProvider.laws[index];
@@ -167,120 +385,190 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          margin:
-                          EdgeInsets.only(bottom: spacing),
-                          child: ListTile(
-                            title: Text(
-                              'Chapter ${law.chapter} • ${law.title}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          margin: EdgeInsets.only(bottom: spacing),
+                          child: Padding(
+                            padding:
+                            const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                            child: Row(
                               children: [
-                                const SizedBox(height: 4),
-                                Text(
-                                  law.description,
-                                  maxLines: 2,
-                                  overflow:
-                                  TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Category: ${law.category}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall,
-                                ),
-                              ],
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  tooltip: 'Edit law',
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            LawFormScreen(
-                                                law: law),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .error,
-                                  tooltip: 'Delete law',
-                                  onPressed: () async {
-                                    final confirmed =
-                                    await _confirmDelete(
-                                        context);
-                                    if (confirmed) {
-                                      final success =
-                                      await lawProvider
-                                          .deleteLaw(
-                                          law.chapter);
-                                      if (success &&
-                                          context.mounted) {
-                                        ScaffoldMessenger.of(
-                                            context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Law deleted successfully'),
+                                // ── Main content ──────────────
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets
+                                                .symmetric(
+                                                horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primaryContainer,
+                                              borderRadius:
+                                              BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              law.chapter,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall
+                                                  ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimaryContainer,
+                                                fontWeight:
+                                                FontWeight.bold,
+                                              ),
+                                            ),
                                           ),
-                                        );
-                                      }
-                                    }
-                                  },
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              law.category,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary,
+                                              ),
+                                              overflow:
+                                              TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        law.title,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                            fontWeight: FontWeight.w600),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // ── Action buttons ────────────
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.edit_outlined,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        size: 20,
+                                      ),
+                                      tooltip: 'Edit',
+                                      onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              LawFormScreen(law: law),
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete_outline,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .error,
+                                        size: 20,
+                                      ),
+                                      tooltip: 'Delete',
+                                      onPressed: () async {
+                                        final confirmed =
+                                        await _confirmDelete(context);
+                                        if (confirmed) {
+                                          final success =
+                                          await lawProvider.deleteLaw(
+                                              law.chapter);
+                                          if (success && context.mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'Law deleted successfully'),
+                                              ),
+                                            );
+                                            // Refresh total count
+                                            setState(() {
+                                              _totalCountFuture = _apiService
+                                                  .getTotalLawCount();
+                                            });
+                                          }
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
+                        ).animate().fadeIn(
+                          duration: 350.ms,
+                          delay: Duration(milliseconds: index * 40),
                         );
                       },
                     ),
                   ),
                 ),
 
-              /// ⏭ Pagination
-              if (!lawProvider.isLoading)
-                Padding(
-                  padding:
-                  EdgeInsets.symmetric(vertical: spacing),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed:
-                        lawProvider.currentPage > 1
-                            ? () => lawProvider.setPage(
-                            lawProvider.currentPage -
-                                1)
-                            : null,
-                      ),
-                      Text(
-                        'Page ${lawProvider.currentPage}'
-                            '${lawProvider.hasNextPage ? '' : ' (Last)'}',
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward),
-                        onPressed:
-                        lawProvider.hasNextPage
-                            ? () => lawProvider.setPage(
-                            lawProvider.currentPage +
-                                1)
-                            : null,
-                      ),
-                    ],
+              // ── Pagination ───────────────────────────────────
+              if (!lawProvider.isLoading && lawProvider.laws.isNotEmpty)
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: spacing / 2),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left),
+                          onPressed: lawProvider.currentPage > 1
+                              ? () => lawProvider
+                              .setPage(lawProvider.currentPage - 1)
+                              : null,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Page ${lawProvider.currentPage}'
+                                '${lawProvider.hasNextPage ? '' : ' · Last'}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right),
+                          onPressed: lawProvider.hasNextPage
+                              ? () => lawProvider
+                              .setPage(lawProvider.currentPage + 1)
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -288,18 +576,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         },
       ),
 
-      /// ➕ Add Law
+      // ── Add Law FAB ────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
         label: const Text('Add Law'),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const LawFormScreen(),
-            ),
-          );
-        },
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const LawFormScreen()),
+        ).then((_) {
+          // Refresh total count after returning from form
+          setState(() {
+            _totalCountFuture = _apiService.getTotalLawCount();
+          });
+        }),
       ),
     );
   }

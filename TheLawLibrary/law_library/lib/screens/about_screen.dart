@@ -5,7 +5,8 @@ import 'package:law_library/providers/theme_provider.dart';
 import 'package:law_library/l10n/app_localizations.dart';
 
 class AboutScreen extends StatelessWidget {
-  const AboutScreen({super.key});
+  final bool showAppBar;
+  const AboutScreen({super.key, this.showAppBar = false});
 
   @override
   Widget build(BuildContext context) {
@@ -17,22 +18,41 @@ class AboutScreen extends StatelessWidget {
     double spacing(double base) => AppTheme.getSpacing(base, uiDensity);
     final textStyle = Theme.of(context).textTheme;
 
-    return SingleChildScrollView(
+    final content = SingleChildScrollView(
       padding: EdgeInsets.all(spacing(AppTheme.baseSpacing16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Text(
-            l10n.aboutLawLibrary,
-            style: textStyle.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+          // Header — logo + title + version
+          Center(
+            child: Column(
+              children: [
+                Image.asset('assets/logo.png', width: 80),
+                SizedBox(height: spacing(AppTheme.baseSpacing16)),
+                Text(
+                  l10n.aboutLawLibrary,
+                  style: textStyle.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: spacing(AppTheme.baseSpacing8)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    l10n.appVersionNumber,
+                    style: textStyle.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: spacing(AppTheme.baseSpacing16)),
-          Text(
-            l10n.appVersionNumber,
-            style: textStyle.titleMedium?.copyWith(color: Colors.grey),
           ),
           SizedBox(height: spacing(AppTheme.baseSpacing24)),
 
@@ -57,6 +77,9 @@ class AboutScreen extends StatelessWidget {
                 _buildFeatureItem(context, Icons.search, l10n.featureSearch, spacing, fontSize),
                 _buildFeatureItem(context, Icons.category, l10n.featureCategories, spacing, fontSize),
                 _buildFeatureItem(context, Icons.favorite, l10n.featureFavorites, spacing, fontSize),
+                _buildFeatureItem(context, Icons.bar_chart_outlined, 'Dashboard & Statistics', spacing, fontSize),
+                _buildFeatureItem(context, Icons.history, 'Recent Searches', spacing, fontSize),
+                _buildFeatureItem(context, Icons.language, 'Bilingual Support (EN / MS)', spacing, fontSize),
                 _buildFeatureItem(context, Icons.settings, l10n.featureSettings, spacing, fontSize),
               ],
             ),
@@ -86,6 +109,14 @@ class AboutScreen extends StatelessWidget {
         ],
       ),
     );
+
+    if (showAppBar) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.about)),
+        body: content,
+      );
+    }
+    return content;
   }
 
   Widget _buildSectionCard(

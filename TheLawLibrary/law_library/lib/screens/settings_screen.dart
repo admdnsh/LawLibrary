@@ -4,6 +4,8 @@ import 'package:law_library/providers/theme_provider.dart';
 import 'package:law_library/providers/law_provider.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/l10n/app_localizations.dart';
+import 'package:law_library/screens/about_screen.dart';
+import 'package:law_library/services/recent_searches_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -24,18 +26,44 @@ class SettingsScreen extends StatelessWidget {
           context: context,
           title: l10n.appearance,
           children: [
-            SwitchListTile(
+            // Theme mode — Light / System / Dark segmented control
+            ListTile(
+              leading: const Icon(Icons.brightness_6_outlined),
               title: Text(l10n.darkMode),
-              value: themeProvider.themeMode == ThemeMode.dark,
-              onChanged: (value) {
-                themeProvider.setThemeMode(
-                  value ? ThemeMode.dark : ThemeMode.light,
-                );
-              },
+              isThreeLine: true,
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: ThemeMode.light,
+                      icon: Icon(Icons.light_mode_outlined, size: 16),
+                      label: Text('Light'),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.system,
+                      icon: Icon(Icons.brightness_auto_outlined, size: 16),
+                      label: Text('System'),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.dark,
+                      icon: Icon(Icons.dark_mode_outlined, size: 16),
+                      label: Text('Dark'),
+                    ),
+                  ],
+                  selected: {themeProvider.themeMode},
+                  onSelectionChanged: (selection) =>
+                      themeProvider.setThemeMode(selection.first),
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ),
             ),
             _divider(),
             _dropdownTile<UiDensity>(
               context: context,
+              icon: Icons.density_medium_outlined,
               title: l10n.uiDensity,
               subtitle: l10n.adjustSpacing,
               value: themeProvider.uiDensity,
@@ -46,6 +74,7 @@ class SettingsScreen extends StatelessWidget {
             _divider(),
             _dropdownTile<AppFontSize>(
               context: context,
+              icon: Icons.text_fields_outlined,
               title: l10n.fontSize,
               subtitle: l10n.adjustFontSize,
               value: themeProvider.fontSize,
@@ -65,11 +94,12 @@ class SettingsScreen extends StatelessWidget {
           children: [
             _dropdownTile<AppLanguage>(
               context: context,
+              icon: Icons.language_outlined,
               title: l10n.language,
               value: themeProvider.language,
               items: AppLanguage.values,
               labelBuilder: (lang) =>
-              lang == AppLanguage.english ? 'English' : 'Bahasa Melayu',
+                  lang == AppLanguage.english ? 'English' : 'Bahasa Melayu',
               onChanged: themeProvider.setLanguage,
             ),
           ],
@@ -77,36 +107,68 @@ class SettingsScreen extends StatelessWidget {
 
         _gap(uiDensity),
 
-        // ---------- Data ----------
+        // ---------- Data & Storage ----------
         _section(
           context: context,
-          title: l10n.favorites,
+          title: l10n.data,
           children: [
             ListTile(
               leading: const Icon(Icons.favorite_outline),
               title: Text(l10n.clearFavorites),
+              subtitle: Text(l10n.removeSavedLaws),
               onTap: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
-                  builder: (context) => AlertDialog(
+                  builder: (ctx) => AlertDialog(
                     title: Text(l10n.clearFavorites),
                     content: Text(l10n.confirmRemoveFavorites),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(ctx).pop(false),
                         child: Text(l10n.cancel),
                       ),
                       ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
+                        onPressed: () => Navigator.of(ctx).pop(true),
                         child: Text(l10n.confirm),
                       ),
                     ],
                   ),
                 );
-
-                if (confirm == true) {
+                if (confirm == true && context.mounted) {
                   await context.read<LawProvider>().clearFavorites();
-                  _snack(context, l10n.confirm);
+                  if (context.mounted) _snack(context, 'Favorites cleared');
+                }
+              },
+            ),
+            _divider(),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Clear Recent Searches'),
+              subtitle: const Text('Remove recent search history'),
+              onTap: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Clear Recent Searches'),
+                    content: const Text(
+                        'Remove all saved search history?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: Text(l10n.cancel),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: Text(l10n.confirm),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true && context.mounted) {
+                  await RecentSearchesService().clear();
+                  if (context.mounted) {
+                    _snack(context, 'Recent searches cleared');
+                  }
                 }
               },
             ),
@@ -124,6 +186,11 @@ class SettingsScreen extends StatelessWidget {
               leading: const Icon(Icons.info_outline),
               title: Text(l10n.appVersion),
               subtitle: const Text('2.0'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutScreen(showAppBar: true)),
+              ),
             ),
           ],
         ),
@@ -167,8 +234,10 @@ class SettingsScreen extends StatelessWidget {
     required List<T> items,
     required String Function(T) labelBuilder,
     required ValueChanged<T> onChanged,
+    IconData? icon,
   }) {
     return ListTile(
+      leading: icon != null ? Icon(icon) : null,
       title: Text(title),
       subtitle: subtitle == null || subtitle.isEmpty ? null : Text(subtitle),
       trailing: DropdownButton<T>(
@@ -177,10 +246,10 @@ class SettingsScreen extends StatelessWidget {
         items: items
             .map(
               (item) => DropdownMenuItem<T>(
-            value: item,
-            child: Text(labelBuilder(item)),
-          ),
-        )
+                value: item,
+                child: Text(labelBuilder(item)),
+              ),
+            )
             .toList(),
         onChanged: (v) => v != null ? onChanged(v) : null,
       ),
@@ -190,11 +259,12 @@ class SettingsScreen extends StatelessWidget {
   Widget _divider() => const Divider(height: 1);
 
   Widget _gap(UiDensity density) => SizedBox(
-    height: AppTheme.getSpacing(AppTheme.baseSpacing16, density),
-  );
+        height: AppTheme.getSpacing(AppTheme.baseSpacing16, density),
+      );
 
   void _snack(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

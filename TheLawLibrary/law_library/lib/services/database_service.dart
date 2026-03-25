@@ -51,7 +51,7 @@ class DatabaseService {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('favorites');
 
-    return maps.map((map) => Law.fromMap(_dbMapToModelMap(map))).toList();
+    return maps.map((map) => Law.fromMap(map)).toList();
   }
 
   Future<bool> isFavorite(String chapter) async {
@@ -113,7 +113,7 @@ class DatabaseService {
       whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
     );
 
-    return maps.map((map) => Law.fromMap(_dbMapToModelMap(map))).toList();
+    return maps.map((map) => Law.fromMap(map)).toList();
   }
 
   // ------------------- Helpers -------------------
@@ -133,19 +133,4 @@ class DatabaseService {
     };
   }
 
-  // Convert DB map to model map (matches Law.fromMap keys)
-  Map<String, dynamic> _dbMapToModelMap(Map<String, dynamic> map) {
-    return {
-      'Chapter': map['chapter'],
-      'Category': map['category'],
-      'Title': map['title'],
-      'Description': map['description'],
-      'Compound_Fine': map['compound_fine'],
-      'Second_Compound_Fine': map['second_compound_fine'],
-      'Third_Compound_Fine': map['third_compound_fine'],
-      'Fourth_Compound_Fine': map['fourth_compound_fine'],
-      'Fifth_Compound_Fine': map['fifth_compound_fine'],
-      'isFavorite': 1,
-    };
-  }
 }

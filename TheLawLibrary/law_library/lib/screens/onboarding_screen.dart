@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:law_library/screens/home_screen.dart';
 import 'package:law_library/theme/app_theme.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,24 +18,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  static const List<_OnboardingSlide> _slides = [
+  List<_OnboardingSlide> _getSlides(AppLocalizations l10n) => [
     _OnboardingSlide(
       icon: Icons.search_rounded,
-      title: 'Find offences instantly',
-      description:
-      'Search by keyword, chapter number, or category to pull up the exact road offence you need — even under pressure at a roadblock.',
+      title: l10n.onboardingSlide1Title,
+      description: l10n.onboardingSlide1Desc,
     ),
     _OnboardingSlide(
       icon: Icons.star_rounded,
-      title: 'Save your most used laws',
-      description:
-      'Swipe any result to favourite it. Your saved offences are always one tap away, even without an internet connection.',
+      title: l10n.onboardingSlide2Title,
+      description: l10n.onboardingSlide2Desc,
     ),
     _OnboardingSlide(
       icon: Icons.check_circle_rounded,
-      title: 'Ready to go',
-      description:
-      'Everything you need is right here. Stay efficient, stay informed, and let the app do the looking up.',
+      title: l10n.onboardingSlide3Title,
+      description: l10n.onboardingSlide3Desc,
     ),
   ];
 
@@ -54,8 +52,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  // Total number of slides — must match _getSlides count
+  static const int _slideCount = 3;
+
   void _nextPage() {
-    if (_currentPage < _slides.length - 1) {
+    if (_currentPage < _slideCount - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOut,
@@ -73,7 +74,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLastPage = _currentPage == _slides.length - 1;
+    final l10n = AppLocalizations.of(context)!;
+    final slides = _getSlides(l10n);
+    final isLastPage = _currentPage == slides.length - 1;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -86,7 +89,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: TextButton(
                 onPressed: _completeOnboarding,
                 child: Text(
-                  'Skip',
+                  l10n.onboardingSkip,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
                   ),
@@ -98,11 +101,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _slides.length,
+                itemCount: slides.length,
                 onPageChanged: (index) =>
                     setState(() => _currentPage = index),
                 itemBuilder: (context, index) {
-                  return _buildSlide(context, _slides[index]);
+                  return _buildSlide(context, slides[index]);
                 },
               ),
             ),
@@ -110,7 +113,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             // ── Page indicators ──────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_slides.length, (index) {
+              children: List.generate(slides.length, (index) {
                 final isActive = index == _currentPage;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
@@ -150,7 +153,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 250),
                     child: Text(
-                      isLastPage ? 'Get Started' : 'Next',
+                      isLastPage ? l10n.onboardingGetStarted : l10n.onboardingNext,
                       key: ValueKey(isLastPage),
                       style: const TextStyle(
                         fontSize: 16,
@@ -170,71 +173,80 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildSlide(BuildContext context, _OnboardingSlide slide) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Icon illustration
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              slide.icon,
-              size: 56,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-          )
-              .animate()
-              .scale(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOutBack,
-            begin: const Offset(0.7, 0.7),
-            end: const Offset(1.0, 1.0),
-          )
-              .fadeIn(duration: const Duration(milliseconds: 400)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Icon illustration
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      slide.icon,
+                      size: 56,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  )
+                      .animate()
+                      .scale(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutBack,
+                    begin: const Offset(0.7, 0.7),
+                    end: const Offset(1.0, 1.0),
+                  )
+                      .fadeIn(duration: const Duration(milliseconds: 400)),
 
-          const SizedBox(height: 40),
+                  const SizedBox(height: 32),
 
-          // Title
-          Text(
-            slide.title,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              height: 1.2,
+                  // Title
+                  Text(
+                    slide.title,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
+                  )
+                      .animate()
+                      .fadeIn(
+                    duration: const Duration(milliseconds: 400),
+                    delay: const Duration(milliseconds: 100),
+                  )
+                      .slideY(begin: 0.1, end: 0),
+
+                  const SizedBox(height: 16),
+
+                  // Description
+                  Text(
+                    slide.description,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      height: 1.6,
+                    ),
+                    textAlign: TextAlign.center,
+                  )
+                      .animate()
+                      .fadeIn(
+                    duration: const Duration(milliseconds: 400),
+                    delay: const Duration(milliseconds: 200),
+                  )
+                      .slideY(begin: 0.1, end: 0),
+                ],
+              ),
             ),
-            textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(
-            duration: const Duration(milliseconds: 400),
-            delay: const Duration(milliseconds: 100),
-          )
-              .slideY(begin: 0.1, end: 0),
-
-          const SizedBox(height: 16),
-
-          // Description
-          Text(
-            slide.description,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(
-            duration: const Duration(milliseconds: 400),
-            delay: const Duration(milliseconds: 200),
-          )
-              .slideY(begin: 0.1, end: 0),
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 }

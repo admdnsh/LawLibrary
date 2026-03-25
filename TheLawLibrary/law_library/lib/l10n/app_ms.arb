@@ -1,34 +1,27 @@
 {
   "@@locale": "ms",
-
   "appTitle": "Perpustakaan Undang-undang",
   "settings": "Tetapan",
-
   "appearance": "Paparan",
   "darkMode": "Mod Gelap",
   "uiDensity": "Ketumpatan UI",
   "fontSize": "Saiz Fon",
   "adjustSpacing": "Laraskan Jarak",
   "adjustFontSize": "Laraskan saiz teks",
-
   "language": "Bahasa",
   "selectLanguage": "Pilih Bahasa",
-
   "data": "Data & Storan",
   "favorites": "Kegemaran",
   "clearFavorites": "Kosongkan Kegemaran",
   "removeSavedLaws": "Padam semua undang-undang disimpan",
   "clearCache": "Kosongkan Cache",
   "removeTempData": "Padam data sementara",
-
   "confirm": "Sahkan",
   "cancel": "Batal",
   "confirmRemoveFavorites": "Adakah anda pasti mahu memadam semua kegemaran?",
   "confirmClearCache": "Adakah anda pasti mahu mengosongkan cache?",
-
   "about": "Mengenai",
   "appVersion": "Versi Aplikasi",
-
   "paymentInformation": "Maklumat Pembayaran",
   "whereToPay": "Tempat Membuat Pembayaran",
   "paymentOptionsText": "Untuk membuat pembayaran, anda mempunyai dua pilihan mudah:",
@@ -40,32 +33,23 @@
   "importantNoteDescription": "Pastikan anda membawa dokumentasi yang diperlukan (contohnya, notis kesalahan, pengenalan) semasa membuat pembayaran di cawangan.",
   "onlinePaymentGuide": "Panduan Pembayaran Dalam Talian",
   "videoReference": "Untuk maklumat lanjut tentang pembayaran dalam talian, sila rujuk video ini:",
-
   "aboutLawLibrary": "Mengenai Law Library",
   "appVersionNumber": "Versi 2.0",
-
   "aboutDescriptionTitle": "Penerangan",
   "aboutDescriptionBody": "Law Library ialah sebuah aplikasi komprehensif yang direka untuk membantu pengguna mengakses, meneroka, dan mengurus maklumat perundangan dengan cekap. Aplikasi ini menyediakan fungsi carian, pengkategorian, serta penandaan undang-undang untuk rujukan pantas. Semua kandungan undang-undang diperoleh daripada Akta Lalu Lintas Jalan Raya (2022) dan Peraturan-Peraturan Lalu Lintas Jalan Raya (2022).",
-
   "aboutFeaturesTitle": "Ciri-ciri",
   "featureSearch": "Carian Undang-undang",
   "featureCategories": "Penapisan Kategori",
   "featureFavorites": "Pengurusan Kegemaran",
   "featureSettings": "Tetapan Boleh Disesuaikan",
-
   "aboutCapstoneTitle": "Projek Capstone",
   "aboutCapstoneBody": "Aplikasi ini dibangunkan sebagai projek capstone bagi memenuhi keperluan Ijazah Sarjana Muda Sains (Kepujian) dalam Pengkomputeran (Pengkhususan Pembangunan Perisian). Projek ini dijalankan dengan kerjasama Jabatan Kawalan Lalu Lintas dan Penyiasatan (JSKLL), menggabungkan pengetahuan teori dan kemahiran praktikal untuk menangani cabaran dunia sebenar melalui penyelidikan gunaan dan inovasi.",
-
   "aboutCreditsTitle": "Penghargaan",
   "aboutCreditsBody": "Dibangunkan oleh: Muhammad Adam Danish bin Shukri\n\nPenyelia UTB:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nPenyelia Agensi:\nASP Pg Hjh Nafiah Pg Hj Asli",
-
   "homeTitle": "Perpustakaan Undang-undang",
   "homeSubtitle": "Cari, semak dan urus kesalahan jalan raya",
-
   "searchFound": "Ditemui {count} {count, plural, one{entri} other{entri}} untuk \"{query}\"",
-
   "totalLaws": "Jumlah Undang-undang: {count}",
-
   "welcomeTitle": "Selamat Datang!",
   "welcomeIntro": "Cara menggunakan aplikasi:",
   "guideSearch": "• Gunakan bar carian di atas untuk mencari undang-undang.",
@@ -75,20 +59,15 @@
   "guideNav": "• Gunakan navigasi bawah untuk tukar skrin.",
   "guideAdmin": "• Pentadbir boleh akses Panel Admin di penjuru kanan atas.",
   "gotIt": "Faham",
-
   "logoutSuccess": "Berjaya log keluar",
-
   "tabFavorites": "Kegemaran",
   "tabPayment": "Pembayaran",
   "tabAbout": "Mengenai",
   "tabSettings": "Tetapan",
   "tabHome": "Laman Utama",
-
   "noFavoritesTitle": "Tiada kegemaran lagi",
   "noFavoritesDescription": "Tambah undang-undang ke kegemaran untuk melihatnya di sini",
-
   "searchFavoritesHint": "Cari kegemaran...",
-
   "favoritesSearchResult": "Dijumpai {count} {count, plural, one{entri} other{entri}} untuk \"{query}\"",
   "@favoritesSearchResult": {
     "placeholders": {
@@ -96,10 +75,8 @@
       "query": {}
     }
   },
-
   "noSearchResultsTitle": "Tiada padanan ditemui",
   "noSearchResultsDescription": "Cuba ubah carian anda",
-
   "lawChapterCategory": "Bab {chapter} • {category}",
   "@lawChapterCategory": {
     "placeholders": {
@@ -107,7 +84,6 @@
       "category": {}
     }
   },
-
   "loginAppBarTitle": "Log Masuk Admin",
   "loginWelcomeTitle": "Selamat Kembali",
   "loginSubtitle": "Log masuk untuk mengakses ciri admin",
@@ -115,8 +91,6 @@
   "loginPasswordLabel": "Kata Laluan",
   "loginButton": "LOG MASUK",
   "loginErrorGeneric": "Ralat berlaku. Sila cuba lagi.",
-
-
   "loginUsernameRequired": "Nama pengguna diperlukan",
   "loginUsernameMinLength": "Nama pengguna mesti sekurang-kurangnya 3 aksara",
   "loginPasswordRequired": "Kata laluan diperlukan",
@@ -124,13 +98,59 @@
   "lawChapterRequired": "Bab diperlukan",
   "lawTitleRequired": "Tajuk diperlukan",
   "lawCategoryRequired": "Kategori diperlukan",
-
   "searchHint": "Cari undang-undang...",
   "searchNoResults": "Tiada hasil ditemui",
-
   "searchNoResultsTitle": "Tiada undang-undang ditemui",
   "searchNoResultsSubtitle": "Cuba laraskan kriteria carian atau penapis anda",
   "paginationPrevious": "Halaman sebelumnya",
   "paginationNext": "Halaman seterusnya",
-  "searchError": "Error: {errorMessage}"
+  "searchError": "Error: {errorMessage}",
+  "recentSearches": "Terkini",
+  "clearSearches": "Padam",
+  "noResultsFound": "Tiada keputusan dijumpai",
+  "noResultsHint": "Cuba cari mengikut tajuk kesalahan, nombor bab, atau kategori.",
+  "noResultsTryLabel": "Cuba cari:",
+  "compoundFines": "DENDA KOMPAUN",
+  "tabDashboard": "Papan Pemuka",
+  "dashboardLawsByCategory": "Undang-undang Mengikut Kategori",
+  "dashboardRecentSearches": "Carian Terkini",
+  "dashboardError": "Tidak dapat memuatkan papan pemuka",
+  "dashboardErrorHint": "Semak sambungan anda dan cuba lagi.",
+  "dashboardRetry": "Cuba Lagi",
+  "dashboardTotalLaws": "Jumlah Undang-undang",
+  "dashboardTotalLawsSubtitle": "Kesalahan jalan raya dalam pangkalan data",
+  "splashSubtitle": "Rujukan Kesalahan Jalan Raya",
+  "onboardingSlide1Title": "Cari kesalahan dengan segera",
+  "onboardingSlide1Desc": "Cari mengikut kata kunci, nombor bab, atau kategori untuk mendapatkan kesalahan jalan raya yang tepat — walaupun dalam keadaan tertekan di sekatan jalan raya.",
+  "onboardingSlide2Title": "Simpan undang-undang yang kerap digunakan",
+  "onboardingSlide2Desc": "Leret mana-mana keputusan untuk menyimpannya. Kesalahan yang disimpan sentiasa boleh dicapai dengan satu ketukan, walaupun tanpa sambungan internet.",
+  "onboardingSlide3Title": "Sedia untuk digunakan",
+  "onboardingSlide3Desc": "Semua yang anda perlukan ada di sini. Kekal cekap, kekal maklum, dan biarkan aplikasi melakukan pencarian.",
+  "onboardingSkip": "Langkau",
+  "onboardingGetStarted": "Mulakan",
+  "onboardingNext": "Seterusnya",
+  "dashboardNoSearches": "Tiada carian lagi — mulakan carian untuk melihat sejarah di sini",
+  "dashboardNoCategoryData": "Tiada data kategori tersedia",
+  "lawDetailsTitle": "Butiran Undang-undang",
+  "confirmDeleteTitle": "Sahkan Padam",
+  "confirmDeleteMessage": "Adakah anda pasti mahu memadam Bab {chapter}?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "chapter": {}
+    }
+  },
+  "delete": "Padam",
+  "lawOffence1": "Kesalahan Pertama",
+  "lawOffence2": "Kesalahan Kedua",
+  "lawOffence3": "Kesalahan Ketiga",
+  "lawOffence4": "Kesalahan Keempat",
+  "lawOffence5": "Kesalahan Kelima",
+  "searchFoundPage": "Halaman {page} · {count} {count, plural, one{keputusan} other{keputusan}} untuk \"{query}\"",
+  "@searchFoundPage": {
+    "placeholders": {
+      "page": {},
+      "count": {},
+      "query": {}
+    }
+  }
 }

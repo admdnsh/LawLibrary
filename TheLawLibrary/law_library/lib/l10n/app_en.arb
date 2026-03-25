@@ -84,7 +84,6 @@
       "category": {}
     }
   },
-
   "loginAppBarTitle": "Admin Login",
   "loginWelcomeTitle": "Welcome Back",
   "loginSubtitle": "Sign in to access admin features",
@@ -92,7 +91,6 @@
   "loginPasswordLabel": "Password",
   "loginButton": "LOGIN",
   "loginErrorGeneric": "An error occurred. Please try again.",
-
   "loginUsernameRequired": "Username is required",
   "loginUsernameMinLength": "Username must be at least 3 characters",
   "loginPasswordRequired": "Password is required",
@@ -100,14 +98,59 @@
   "lawChapterRequired": "Chapter is required",
   "lawTitleRequired": "Title is required",
   "lawCategoryRequired": "Category is required",
-
   "searchHint": "Search laws...",
   "searchNoResults": "No results found",
-
   "searchNoResultsTitle": "No laws found",
   "searchNoResultsSubtitle": "Try adjusting your search or filter criteria",
   "paginationPrevious": "Previous page",
   "paginationNext": "Next page",
-  "searchError": "Error: {errorMessage}"
-
+  "searchError": "Error: {errorMessage}",
+  "recentSearches": "Recent",
+  "clearSearches": "Clear",
+  "noResultsFound": "No results found",
+  "noResultsHint": "Try searching by offence title, chapter number, or category.",
+  "noResultsTryLabel": "Try searching for:",
+  "compoundFines": "COMPOUND FINES",
+  "tabDashboard": "Dashboard",
+  "dashboardLawsByCategory": "Laws by Category",
+  "dashboardRecentSearches": "Recent Searches",
+  "dashboardError": "Could not load dashboard",
+  "dashboardErrorHint": "Check your connection and try again.",
+  "dashboardRetry": "Retry",
+  "dashboardTotalLaws": "Total Laws",
+  "dashboardTotalLawsSubtitle": "Road offences in database",
+  "splashSubtitle": "Road Offences Reference",
+  "onboardingSlide1Title": "Find offences instantly",
+  "onboardingSlide1Desc": "Search by keyword, chapter number, or category to pull up the exact road offence you need — even under pressure at a roadblock.",
+  "onboardingSlide2Title": "Save your most used laws",
+  "onboardingSlide2Desc": "Swipe any result to favourite it. Your saved offences are always one tap away, even without an internet connection.",
+  "onboardingSlide3Title": "Ready to go",
+  "onboardingSlide3Desc": "Everything you need is right here. Stay efficient, stay informed, and let the app do the looking up.",
+  "onboardingSkip": "Skip",
+  "onboardingGetStarted": "Get Started",
+  "onboardingNext": "Next",
+  "dashboardNoSearches": "No searches yet — start searching to see history here",
+  "dashboardNoCategoryData": "No category data available",
+  "lawDetailsTitle": "Law Details",
+  "confirmDeleteTitle": "Confirm Delete",
+  "confirmDeleteMessage": "Are you sure you want to delete Chapter {chapter}?",
+  "@confirmDeleteMessage": {
+    "placeholders": {
+      "chapter": {}
+    }
+  },
+  "delete": "Delete",
+  "lawOffence1": "1st Offence",
+  "lawOffence2": "2nd Offence",
+  "lawOffence3": "3rd Offence",
+  "lawOffence4": "4th Offence",
+  "lawOffence5": "5th Offence",
+  "searchFoundPage": "Page {page} · {count} {count, plural, one{result} other{results}} for \"{query}\"",
+  "@searchFoundPage": {
+    "placeholders": {
+      "page": {},
+      "count": {},
+      "query": {}
+    }
+  }
 }

@@ -18,7 +18,6 @@ import 'package:law_library/widgets/law_list.dart';
 
 import 'package:law_library/screens/favorites_screen.dart';
 import 'package:law_library/screens/payment_screen.dart';
-import 'package:law_library/screens/about_screen.dart';
 import 'package:law_library/screens/settings_screen.dart';
 import 'package:law_library/screens/login_screen.dart';
 import 'package:law_library/screens/admin_panel_screen.dart';
@@ -34,11 +33,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _searchFocusNode = FocusNode();
   final RecentSearchesService _recentSearchesService = RecentSearchesService();
 
   int _currentIndex = 0;
   Timer? _debounce;
   List<String> _recentSearches = [];
+  List<String> _filteredSuggestions = [];
 
   // Offline state
   bool _isOffline = false;
@@ -53,6 +54,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadRecentSearches();
     _initConnectivity();
+    _searchFocusNode.addListener(() {
+      if (!_searchFocusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 150), () {
+          if (mounted) _hideSuggestions();
+        });
+      }
+    });
   }
 
   // --------------------------------------------------
@@ -100,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // --------------------------------------------------
 
   void _handleSearch(String query) {
+    _updateSuggestions(query);
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
       final provider = context.read<LawProvider>();
@@ -109,12 +118,101 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _applyRecentSearch(String query) {
+    _hideSuggestions();
     _searchController.text = query;
     _searchController.selection = TextSelection.fromPosition(
       TextPosition(offset: query.length),
     );
     context.read<LawProvider>().setSearchQuery(query);
     _saveRecentSearch(query);
+  }
+
+  // --------------------------------------------------
+  // AUTOCOMPLETE SUGGESTIONS
+  // --------------------------------------------------
+
+  void _updateSuggestions(String query) {
+    if (query.trim().isEmpty) {
+      _hideSuggestions();
+      return;
+    }
+
+    final lowerQuery = query.toLowerCase();
+    final provider = context.read<LawProvider>();
+    final seen = <String>{};
+    final matches = <String>[];
+
+    for (final s in _recentSearches) {
+      if (s.toLowerCase().contains(lowerQuery) && seen.add(s)) {
+        matches.add(s);
+      }
+    }
+
+    for (final c in provider.categories) {
+      if (c.toLowerCase().contains(lowerQuery) && seen.add(c)) {
+        matches.add(c);
+      }
+    }
+
+    final suggestions = matches.take(6).toList();
+    setState(() => _filteredSuggestions = suggestions);
+  }
+
+  void _hideSuggestions() {
+    if (_filteredSuggestions.isNotEmpty) {
+      setState(() => _filteredSuggestions = []);
+    }
+  }
+
+  Widget _buildSuggestionsCard() {
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _filteredSuggestions.asMap().entries.map((entry) {
+            final suggestion = entry.value;
+            final isRecent = _recentSearches.contains(suggestion);
+            return InkWell(
+              onTap: () {
+                _hideSuggestions();
+                _applyRecentSearch(suggestion);
+              },
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(
+                      isRecent ? Icons.history : Icons.label_outline,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        suggestion,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                    Icon(
+                      Icons.north_west,
+                      size: 14,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withOpacity(0.5),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
   }
 
   void _onTabChanged(int index) {
@@ -168,36 +266,36 @@ class _HomeScreenState extends State<HomeScreen> {
         final bool isIdle = provider.searchQuery == null;
 
         return GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            _hideSuggestions();
+          },
           behavior: HitTestBehavior.translucent,
           child: Column(
             children: [
               // ── Offline banner ────────────────────────────────────
               _buildOfflineBanner(),
 
-              // ── Top section: always visible ───────────────────────
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeInOut,
-                padding: EdgeInsets.fromLTRB(
-                  24,
-                  isIdle ? 0 : 24,
-                  24,
-                  isIdle ? 0 : 12,
-                ),
+              // ── Content area ──────────────────────────────────────
+              Expanded(
                 child: isIdle
                     ? _buildIdleLayout(context, l10n, provider)
-                    : _buildActiveLayout(context, l10n, provider),
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                            child: _buildActiveLayout(context, l10n, provider),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: LawList(scrollController: _scrollController),
+                            ),
+                          ),
+                        ],
+                      ),
               ),
-
-              // ── Results: only shown when searching ────────────────
-              if (!isIdle)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: LawList(scrollController: _scrollController),
-                  ),
-                ),
             ],
           ),
         );
@@ -214,70 +312,85 @@ class _HomeScreenState extends State<HomeScreen> {
       AppLocalizations l10n,
       LawProvider provider,
       ) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.75,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset('assets/logo.png', width: 96)
-              .animate()
-              .fadeIn(duration: const Duration(milliseconds: 500))
-              .scale(
-            begin: const Offset(0.85, 0.85),
-            end: const Offset(1, 1),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/logo.png', width: 96)
+                      .animate()
+                      .fadeIn(duration: const Duration(milliseconds: 500))
+                      .scale(
+                        begin: const Offset(0.85, 0.85),
+                        end: const Offset(1, 1),
+                      ),
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    l10n.homeTitle,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  )
+                      .animate()
+                      .fadeIn(
+                        duration: const Duration(milliseconds: 400),
+                        delay: const Duration(milliseconds: 100),
+                      )
+                      .slideY(begin: 0.1, end: 0),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    l10n.homeSubtitle,
+                    style: const TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  )
+                      .animate()
+                      .fadeIn(
+                        duration: const Duration(milliseconds: 400),
+                        delay: const Duration(milliseconds: 150),
+                      ),
+
+                  const SizedBox(height: 32),
+
+                  AppSearchBar(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                    hintText: l10n.searchHint,
+                    onSearch: _handleSearch,
+                  )
+                      .animate()
+                      .fadeIn(
+                        duration: const Duration(milliseconds: 400),
+                        delay: const Duration(milliseconds: 200),
+                      )
+                      .slideY(begin: 0.15, end: 0),
+
+                  if (_filteredSuggestions.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    _buildSuggestionsCard(),
+                  ] else if (_recentSearches.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    _buildRecentSearches(context),
+                    const SizedBox(height: 24),
+                  ],
+                ],
+              ),
+            ),
           ),
-
-          const SizedBox(height: 20),
-
-          Text(
-            l10n.homeTitle,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(
-            duration: const Duration(milliseconds: 400),
-            delay: const Duration(milliseconds: 100),
-          )
-              .slideY(begin: 0.1, end: 0),
-
-          const SizedBox(height: 6),
-
-          Text(
-            l10n.homeSubtitle,
-            style: const TextStyle(color: Colors.grey),
-            textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(
-            duration: const Duration(milliseconds: 400),
-            delay: const Duration(milliseconds: 150),
-          ),
-
-          const SizedBox(height: 32),
-
-          AppSearchBar(
-            controller: _searchController,
-            hintText: l10n.searchHint,
-            onSearch: _handleSearch,
-          )
-              .animate()
-              .fadeIn(
-            duration: const Duration(milliseconds: 400),
-            delay: const Duration(milliseconds: 200),
-          )
-              .slideY(begin: 0.15, end: 0),
-
-          if (_recentSearches.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            _buildRecentSearches(context),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildRecentSearches(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -291,7 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 4),
                 Text(
-                  'Recent',
+                  l10n.recentSearches,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.secondary,
                     fontWeight: FontWeight.w600,
@@ -302,7 +415,7 @@ class _HomeScreenState extends State<HomeScreen> {
             GestureDetector(
               onTap: _clearRecentSearches,
               child: Text(
-                'Clear',
+                l10n.clearSearches,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.secondary,
                 ),
@@ -379,15 +492,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
         AppSearchBar(
           controller: _searchController,
+          focusNode: _searchFocusNode,
           hintText: l10n.searchHint,
           onSearch: _handleSearch,
         ),
 
+        if (_filteredSuggestions.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          _buildSuggestionsCard(),
+        ],
+
         const SizedBox(height: 8),
 
-        if (!provider.isLoading)
+        if (!provider.isLoading && _filteredSuggestions.isEmpty)
           Text(
-            l10n.searchFound(provider.laws.length, provider.searchQuery!),
+            (provider.currentPage == 1 && !provider.hasNextPage)
+                ? l10n.searchFound(provider.laws.length, provider.searchQuery!)
+                : l10n.searchFoundPage(provider.currentPage, provider.laws.length, provider.searchQuery!),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.secondary,
             ),
@@ -407,21 +528,39 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final auth = context.watch<AuthProvider>();
+    final isAdmin = auth.isLoggedIn && auth.isAdmin;
+
+    // Build tab labels and screens dynamically based on role.
+    // Index 0 is always Home (handled separately in body).
+    final tabLabels = [
+      l10n.tabHome,
+      l10n.tabFavorites,
+      if (isAdmin) l10n.tabDashboard,
+      l10n.tabPayment,
+      l10n.tabSettings,
+    ];
+
+    final tabScreens = [
+      const SizedBox(), // Home is rendered via _buildHomeBody
+      const FavoritesScreen(),
+      if (isAdmin) const DashboardScreen(),
+      const PaymentScreen(),
+      const SettingsScreen(),
+    ];
+
+    // Clamp index in case auth state changed (e.g. logout while on Dashboard).
+    final safeIndex = _currentIndex.clamp(0, tabLabels.length - 1);
+    if (safeIndex != _currentIndex) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) { if (mounted) setState(() => _currentIndex = 0); },
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          [
-            l10n.tabHome,
-            l10n.tabFavorites,
-            'Dashboard',
-            l10n.tabPayment,
-            l10n.tabAbout,
-            l10n.tabSettings,
-          ][_currentIndex],
-        ),
+        title: Text(tabLabels[safeIndex]),
         actions: [
-          if (auth.isLoggedIn && auth.isAdmin)
+          if (isAdmin)
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
               onPressed: () => Navigator.push(
@@ -433,31 +572,27 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(auth.isLoggedIn ? Icons.logout : Icons.login),
             onPressed: auth.isLoggedIn
                 ? () async {
-              await auth.logout();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.logoutSuccess)),
-              );
-            }
+                    await auth.logout();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.logoutSuccess)),
+                      );
+                    }
+                  }
                 : () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            ),
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    ),
           ),
         ],
       ),
-      body: _currentIndex == 0
+      body: safeIndex == 0
           ? _buildHomeBody(context, l10n)
-          : [
-        const SizedBox(),
-        const FavoritesScreen(),
-        const DashboardScreen(),
-        const PaymentScreen(),
-        const AboutScreen(),
-        const SettingsScreen(),
-      ][_currentIndex],
+          : tabScreens[safeIndex],
       bottomNavigationBar: AppBottomNavigation(
-        currentIndex: _currentIndex,
+        currentIndex: safeIndex,
         onTap: _onTabChanged,
+        isAdmin: isAdmin,
       ),
     );
   }
@@ -465,6 +600,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     _debounce?.cancel();
     _scrollController.dispose();
     _connectivitySubscription?.cancel();

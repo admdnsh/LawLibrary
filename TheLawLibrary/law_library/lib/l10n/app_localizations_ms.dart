@@ -144,7 +144,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get aboutCreditsTitle => 'Penghargaan';
 
   @override
-  String get aboutCreditsBody => 'Dibangunkan oleh: Muhammad Adam Danish bin Shukri\n\nPenyelia UTB:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nPenyelia Agensi:\nASP Dk Husmawati Pg Hussin\nASP Pg Hjh Nafiah Pg Hj Asli';
+  String get aboutCreditsBody => 'Dibangunkan oleh: Muhammad Adam Danish bin Shukri\n\nPenyelia UTB:\nDr. Wida Susanty Haji Suhaili\nAk. Dr Mohd Salihin Pg Haji Abdul Rahim\n\nPenyelia Agensi:\nASP Pg Hjh Nafiah Pg Hj Asli';
 
   @override
   String get homeTitle => 'Perpustakaan Undang-undang';
@@ -307,5 +307,123 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String searchError(Object errorMessage) {
     return 'Error: $errorMessage';
+  }
+
+  @override
+  String get recentSearches => 'Terkini';
+
+  @override
+  String get clearSearches => 'Padam';
+
+  @override
+  String get noResultsFound => 'Tiada keputusan dijumpai';
+
+  @override
+  String get noResultsHint => 'Cuba cari mengikut tajuk kesalahan, nombor bab, atau kategori.';
+
+  @override
+  String get noResultsTryLabel => 'Cuba cari:';
+
+  @override
+  String get compoundFines => 'DENDA KOMPAUN';
+
+  @override
+  String get tabDashboard => 'Papan Pemuka';
+
+  @override
+  String get dashboardLawsByCategory => 'Undang-undang Mengikut Kategori';
+
+  @override
+  String get dashboardRecentSearches => 'Carian Terkini';
+
+  @override
+  String get dashboardError => 'Tidak dapat memuatkan papan pemuka';
+
+  @override
+  String get dashboardErrorHint => 'Semak sambungan anda dan cuba lagi.';
+
+  @override
+  String get dashboardRetry => 'Cuba Lagi';
+
+  @override
+  String get dashboardTotalLaws => 'Jumlah Undang-undang';
+
+  @override
+  String get dashboardTotalLawsSubtitle => 'Kesalahan jalan raya dalam pangkalan data';
+
+  @override
+  String get splashSubtitle => 'Rujukan Kesalahan Jalan Raya';
+
+  @override
+  String get onboardingSlide1Title => 'Cari kesalahan dengan segera';
+
+  @override
+  String get onboardingSlide1Desc => 'Cari mengikut kata kunci, nombor bab, atau kategori untuk mendapatkan kesalahan jalan raya yang tepat — walaupun dalam keadaan tertekan di sekatan jalan raya.';
+
+  @override
+  String get onboardingSlide2Title => 'Simpan undang-undang yang kerap digunakan';
+
+  @override
+  String get onboardingSlide2Desc => 'Leret mana-mana keputusan untuk menyimpannya. Kesalahan yang disimpan sentiasa boleh dicapai dengan satu ketukan, walaupun tanpa sambungan internet.';
+
+  @override
+  String get onboardingSlide3Title => 'Sedia untuk digunakan';
+
+  @override
+  String get onboardingSlide3Desc => 'Semua yang anda perlukan ada di sini. Kekal cekap, kekal maklum, dan biarkan aplikasi melakukan pencarian.';
+
+  @override
+  String get onboardingSkip => 'Langkau';
+
+  @override
+  String get onboardingGetStarted => 'Mulakan';
+
+  @override
+  String get onboardingNext => 'Seterusnya';
+
+  @override
+  String get dashboardNoSearches => 'Tiada carian lagi — mulakan carian untuk melihat sejarah di sini';
+
+  @override
+  String get dashboardNoCategoryData => 'Tiada data kategori tersedia';
+
+  @override
+  String get lawDetailsTitle => 'Butiran Undang-undang';
+
+  @override
+  String get confirmDeleteTitle => 'Sahkan Padam';
+
+  @override
+  String confirmDeleteMessage(Object chapter) {
+    return 'Adakah anda pasti mahu memadam Bab $chapter?';
+  }
+
+  @override
+  String get delete => 'Padam';
+
+  @override
+  String get lawOffence1 => 'Kesalahan Pertama';
+
+  @override
+  String get lawOffence2 => 'Kesalahan Kedua';
+
+  @override
+  String get lawOffence3 => 'Kesalahan Ketiga';
+
+  @override
+  String get lawOffence4 => 'Kesalahan Keempat';
+
+  @override
+  String get lawOffence5 => 'Kesalahan Kelima';
+
+  @override
+  String searchFoundPage(Object page, num count, Object query) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'keputusan',
+      one: 'keputusan',
+    );
+    return 'Halaman $page · $count $_temp0 untuk \"$query\"';
   }
 }
