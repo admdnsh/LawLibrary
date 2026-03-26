@@ -224,6 +224,28 @@ class _LawListState extends State<LawList> {
         // ── Main list with infinite scroll ────────────────────────
         return Column(
           children: [
+            // Cached results banner
+            if (lawProvider.isFromCache)
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                color: Colors.orange.withOpacity(0.12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.offline_bolt_outlined,
+                        size: 14, color: Colors.orange),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Showing cached results',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.orange[700],
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+
             Expanded(
               child: Scrollbar(
                 controller: widget.scrollController,

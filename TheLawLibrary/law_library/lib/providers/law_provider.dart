@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:law_library/models/law.dart';
 import 'package:law_library/services/api_service.dart';
 import 'package:law_library/services/database_service.dart';
+import 'package:law_library/data/local/law_local_data_source.dart';
 
 class LawProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   final DatabaseService _databaseService = DatabaseService();
+  final LawLocalDataSource _localDataSource = LawLocalDataSource();
 
   // ------------------- State -------------------
   List<Law> _laws = [];
@@ -14,6 +16,7 @@ class LawProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   bool _isLoadingMore = false;
+  bool _isFromCache = false;
   String? _error;
 
   int _currentPage = 1;
@@ -30,6 +33,7 @@ class LawProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
+  bool get isFromCache => _isFromCache;
   String? get error => _error;
 
   int get currentPage => _currentPage;
@@ -76,10 +80,40 @@ class LawProvider extends ChangeNotifier {
         _laws = [..._laws, ...result];
       }
       _hasMorePages = result.length == _itemsPerPage;
+      _isFromCache = false;
+
+      // Cache results silently in the background
+      await _localDataSource.insertLaws(result);
 
       _syncFavorites();
     } catch (e) {
-      _error = e.toString();
+      // API failed — try local cache
+      try {
+        final cached = await _localDataSource.searchLaws(
+          query: _searchQuery,
+          category: _selectedCategory,
+          page: _currentPage,
+          limit: _itemsPerPage,
+        );
+
+        if (cached.isNotEmpty) {
+          if (reset) {
+            _laws = cached;
+          } else {
+            _laws = [..._laws, ...cached];
+          }
+          _hasMorePages = cached.length == _itemsPerPage;
+          _isFromCache = true;
+          _error = null;
+          _syncFavorites();
+        } else {
+          _isFromCache = false;
+          _error = e.toString();
+        }
+      } catch (_) {
+        _isFromCache = false;
+        _error = e.toString();
+      }
     } finally {
       _isLoading = false;
       _isLoadingMore = false;
@@ -93,6 +127,13 @@ class LawProvider extends ChangeNotifier {
       _categories = await _apiService.getCategories();
       notifyListeners();
     } catch (e) {
+      // Fall back to categories derived from cached laws
+      try {
+        final cached = await _localDataSource.getDistinctCategories();
+        if (cached.isNotEmpty) _categories = cached;
+      } catch (_) {
+        // ignore — no cached categories available
+      }
       _error = e.toString();
       notifyListeners();
     }
