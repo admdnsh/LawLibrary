@@ -152,5 +152,61 @@
       "count": {},
       "query": {}
     }
-  }
+  },
+
+  "edit": "Edit",
+  "copiedToClipboard": "Copied to clipboard",
+  "videoUnavailable": "Video unavailable",
+
+  "themeModeLight": "Light",
+  "themeModeSystem": "System",
+  "themeModeDark": "Dark",
+
+  "clearRecentSearches": "Clear Recent Searches",
+  "removeSearchHistory": "Remove recent search history",
+  "confirmClearSearches": "Remove all saved search history?",
+  "searchesCleared": "Recent searches cleared",
+  "favoritesCleared": "Favorites cleared",
+
+  "savedLawsCount": "{count, plural, one{{count} saved law} other{{count} saved laws}}",
+  "@savedLawsCount": {
+    "placeholders": {
+      "count": { "type": "num" }
+    }
+  },
+  "sortByTitle": "Sort by Title",
+  "sortByCategory": "Sort by Category",
+  "sortByChapter": "Sort by Chapter",
+  "sortTitle": "Title",
+  "sortCategory": "Category",
+  "sortChapter": "Chapter",
+
+  "adminPanelTitle": "Admin Panel",
+  "adminCategories": "Categories",
+  "adminThisPage": "This Page",
+  "adminFilterAll": "All",
+  "adminFilteringBy": "Filtering by: {category}",
+  "@adminFilteringBy": {
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "adminDeleteLawTitle": "Delete Law",
+  "adminDeleteLawMessage": "This action cannot be undone.",
+  "adminAddLaw": "Add Law",
+  "adminLawDeleted": "Law deleted successfully",
+  "adminNoLawsInCategory": "No laws in \"{category}\" category",
+  "@adminNoLawsInCategory": {
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "adminNoLawsHint": "Try adjusting your search or add a new law.",
+  "adminPage": "Page {page}",
+  "@adminPage": {
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "adminPageLast": "· Last"
 }

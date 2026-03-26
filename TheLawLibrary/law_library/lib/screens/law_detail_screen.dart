@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:law_library/models/law.dart';
 import 'package:law_library/providers/law_provider.dart';
@@ -199,6 +200,26 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
       appBar: AppBar(
         title: Text(l10n.lawDetailsTitle),
         actions: [
+          // Copy to clipboard
+          IconButton(
+            icon: const Icon(Icons.copy_outlined),
+            tooltip: 'Copy to clipboard',
+            onPressed: () {
+              final buffer = StringBuffer()
+                ..writeln(widget.law.chapter)
+                ..writeln(widget.law.title)
+                ..writeln()
+                ..write(widget.law.description);
+              Clipboard.setData(ClipboardData(text: buffer.toString()));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                content: Text(l10n.copiedToClipboard),
+                duration: const Duration(seconds: 2),
+              ),
+              );
+            },
+          ),
+
           // Favourite toggle
           IconButton(
             icon: Icon(
@@ -225,12 +246,12 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
                 }
               },
               itemBuilder: (_) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
                   child: Row(children: [
-                    Icon(Icons.edit),
-                    SizedBox(width: 8),
-                    Text('Edit'),
+                    const Icon(Icons.edit),
+                    const SizedBox(width: 8),
+                    Text(l10n.edit),
                   ]),
                 ),
                 PopupMenuItem(
@@ -239,7 +260,7 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
                     Icon(Icons.delete,
                         color: Theme.of(context).colorScheme.error),
                     const SizedBox(width: 8),
-                    Text('Delete',
+                    Text(l10n.delete,
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.error)),
                   ]),
@@ -281,11 +302,17 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
               AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity)),
 
           // ── Title ─────────────────────────────────────────────
-          Text(
-            widget.law.title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              height: 1.3,
+          Hero(
+            tag: 'law-title-${widget.law.chapter}',
+            child: Material(
+              color: Colors.transparent,
+              child: Text(
+                widget.law.title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  height: 1.3,
+                ),
+              ),
             ),
           )
               .animate()

@@ -173,15 +173,23 @@ class LawListItem extends StatelessWidget {
                               AppTheme.baseSpacing8, uiDensity)),
 
                       // Title
-                      Text(
-                        law.title,
-                        style:
-                        Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
+                      Hero(
+                        tag: 'law-title-${law.chapter}',
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Text(
+                            law.title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              height: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
 
                       SizedBox(

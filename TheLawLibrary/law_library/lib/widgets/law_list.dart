@@ -16,6 +16,72 @@ class LawList extends StatefulWidget {
   State<LawList> createState() => _LawListState();
 }
 
+// ── Skeleton card shown while initial results load ─────────────────────────
+
+class _SkeletonCard extends StatelessWidget {
+  final UiDensity density;
+  const _SkeletonCard({required this.density});
+
+  Widget _block(BuildContext context, {double? width, required double height}) {
+    return Container(
+      width: width ?? double.infinity,
+      height: height,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: AppTheme.getSpacing(AppTheme.baseSpacing12, density),
+      ),
+      child: Container(
+        padding: EdgeInsets.all(
+          AppTheme.getSpacing(AppTheme.baseSpacing16, density),
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(
+            AppTheme.getSpacing(AppTheme.borderRadiusMedium, density),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              _block(context, width: 70, height: 22),
+              SizedBox(width: AppTheme.getSpacing(8, density)),
+              _block(context, width: 90, height: 22),
+            ]),
+            SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing8, density)),
+            _block(context, height: 14),
+            SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing4, density)),
+            _block(context, width: 200, height: 14),
+            SizedBox(height: AppTheme.getSpacing(AppTheme.baseSpacing4, density)),
+            _block(context, width: 110, height: 11),
+          ],
+        ),
+      ).animate(onPlay: (c) => c.repeat()).shimmer(
+            duration: 1200.ms,
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+          ),
+    );
+  }
+}
+
+// ── Main list widget ───────────────────────────────────────────────────────
+
 class _LawListState extends State<LawList> {
   static const List<String> _fallbackSuggestions = [
     'Seatbelt',
@@ -57,7 +123,19 @@ class _LawListState extends State<LawList> {
 
         // ── Loading state ────────────────────────────────────────
         if (lawProvider.isLoading && lawProvider.laws.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Padding(
+            padding: EdgeInsets.all(
+              AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity),
+            ),
+            child: Column(
+              children: List.generate(
+                5,
+                (i) => _SkeletonCard(density: uiDensity)
+                    .animate(delay: Duration(milliseconds: i * 80))
+                    .fadeIn(duration: 300.ms),
+              ),
+            ),
+          );
         }
 
         // ── No results state ─────────────────────────────────────

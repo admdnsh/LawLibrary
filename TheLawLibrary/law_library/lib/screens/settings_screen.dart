@@ -34,21 +34,21 @@ class SettingsScreen extends StatelessWidget {
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: SegmentedButton<ThemeMode>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: ThemeMode.light,
-                      icon: Icon(Icons.light_mode_outlined, size: 16),
-                      label: Text('Light'),
+                      icon: const Icon(Icons.light_mode_outlined, size: 16),
+                      label: Text(l10n.themeModeLight),
                     ),
                     ButtonSegment(
                       value: ThemeMode.system,
-                      icon: Icon(Icons.brightness_auto_outlined, size: 16),
-                      label: Text('System'),
+                      icon: const Icon(Icons.brightness_auto_outlined, size: 16),
+                      label: Text(l10n.themeModeSystem),
                     ),
                     ButtonSegment(
                       value: ThemeMode.dark,
-                      icon: Icon(Icons.dark_mode_outlined, size: 16),
-                      label: Text('Dark'),
+                      icon: const Icon(Icons.dark_mode_outlined, size: 16),
+                      label: Text(l10n.themeModeDark),
                     ),
                   ],
                   selected: {themeProvider.themeMode},
@@ -136,22 +136,21 @@ class SettingsScreen extends StatelessWidget {
                 );
                 if (confirm == true && context.mounted) {
                   await context.read<LawProvider>().clearFavorites();
-                  if (context.mounted) _snack(context, 'Favorites cleared');
+                  if (context.mounted) _snack(context, l10n.favoritesCleared);
                 }
               },
             ),
             _divider(),
             ListTile(
               leading: const Icon(Icons.history),
-              title: const Text('Clear Recent Searches'),
-              subtitle: const Text('Remove recent search history'),
+              title: Text(l10n.clearRecentSearches),
+              subtitle: Text(l10n.removeSearchHistory),
               onTap: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Clear Recent Searches'),
-                    content: const Text(
-                        'Remove all saved search history?'),
+                    title: Text(l10n.clearRecentSearches),
+                    content: Text(l10n.confirmClearSearches),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(false),
@@ -167,7 +166,7 @@ class SettingsScreen extends StatelessWidget {
                 if (confirm == true && context.mounted) {
                   await RecentSearchesService().clear();
                   if (context.mounted) {
-                    _snack(context, 'Recent searches cleared');
+                    _snack(context, l10n.searchesCleared);
                   }
                 }
               },

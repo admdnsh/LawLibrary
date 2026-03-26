@@ -152,5 +152,61 @@
       "count": {},
       "query": {}
     }
-  }
+  },
+
+  "edit": "Edit",
+  "copiedToClipboard": "Disalin ke papan klip",
+  "videoUnavailable": "Video tidak tersedia",
+
+  "themeModeLight": "Terang",
+  "themeModeSystem": "Sistem",
+  "themeModeDark": "Gelap",
+
+  "clearRecentSearches": "Kosongkan Carian Terkini",
+  "removeSearchHistory": "Padam sejarah carian terkini",
+  "confirmClearSearches": "Padam semua sejarah carian yang disimpan?",
+  "searchesCleared": "Carian terkini telah dikosongkan",
+  "favoritesCleared": "Kegemaran telah dikosongkan",
+
+  "savedLawsCount": "{count, plural, other{{count} undang-undang disimpan}}",
+  "@savedLawsCount": {
+    "placeholders": {
+      "count": { "type": "num" }
+    }
+  },
+  "sortByTitle": "Isih mengikut Tajuk",
+  "sortByCategory": "Isih mengikut Kategori",
+  "sortByChapter": "Isih mengikut Bab",
+  "sortTitle": "Tajuk",
+  "sortCategory": "Kategori",
+  "sortChapter": "Bab",
+
+  "adminPanelTitle": "Panel Admin",
+  "adminCategories": "Kategori",
+  "adminThisPage": "Halaman Ini",
+  "adminFilterAll": "Semua",
+  "adminFilteringBy": "Menapis mengikut: {category}",
+  "@adminFilteringBy": {
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "adminDeleteLawTitle": "Padam Undang-undang",
+  "adminDeleteLawMessage": "Tindakan ini tidak boleh dibatalkan.",
+  "adminAddLaw": "Tambah Undang-undang",
+  "adminLawDeleted": "Undang-undang berjaya dipadam",
+  "adminNoLawsInCategory": "Tiada undang-undang dalam kategori \"{category}\"",
+  "@adminNoLawsInCategory": {
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "adminNoLawsHint": "Cuba laraskan carian atau tambah undang-undang baru.",
+  "adminPage": "Halaman {page}",
+  "@adminPage": {
+    "placeholders": {
+      "page": {}
+    }
+  },
+  "adminPageLast": "· Akhir"
 }

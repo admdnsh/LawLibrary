@@ -9,6 +9,7 @@ import 'package:law_library/providers/theme_provider.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/screens/law_form_screen.dart';
 import 'package:law_library/services/api_service.dart';
+import 'package:law_library/l10n/app_localizations.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -55,22 +56,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   }
 
   Future<bool> _confirmDelete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     return await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Law'),
-        content: const Text('This action cannot be undone.'),
+        title: Text(l10n.adminDeleteLawTitle),
+        content: Text(l10n.adminDeleteLawMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
-              'Delete',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.error),
+              l10n.delete,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],
@@ -85,11 +86,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   Widget _buildStatsBanner(
       BuildContext context, LawProvider lawProvider, double spacing) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.fromLTRB(spacing, spacing, spacing, 0),
       child: Row(
         children: [
-          // Total laws
           Expanded(
             child: FutureBuilder<int>(
               future: _totalCountFuture,
@@ -98,7 +99,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 return _buildStatCard(
                   context,
                   icon: Icons.gavel_outlined,
-                  label: 'Total Laws',
+                  label: l10n.dashboardTotalLaws,
                   value: snapshot.connectionState == ConnectionState.waiting
                       ? '—'
                       : '$count',
@@ -107,22 +108,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          // Total categories
           Expanded(
             child: _buildStatCard(
               context,
               icon: Icons.category_outlined,
-              label: 'Categories',
+              label: l10n.adminCategories,
               value: '${lawProvider.categories.length}',
             ),
           ),
           const SizedBox(width: 12),
-          // Current page results
           Expanded(
             child: _buildStatCard(
               context,
               icon: Icons.list_outlined,
-              label: 'This Page',
+              label: l10n.adminThisPage,
               value: '${lawProvider.laws.length}',
             ),
           ),
@@ -192,7 +191,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: const Text('All'),
+              label: Text(AppLocalizations.of(context)!.adminFilterAll),
               selected: _selectedCategory == null,
               onSelected: (_) => _onCategoryChanged(null),
               selectedColor: Theme.of(context).colorScheme.primaryContainer,
@@ -229,8 +228,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final uiDensity = themeProvider.uiDensity;
     final spacing = AppTheme.getSpacing(AppTheme.baseSpacing16, uiDensity);
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Panel')),
+      appBar: AppBar(title: Text(l10n.adminPanelTitle)),
       body: Consumer<LawProvider>(
         builder: (context, lawProvider, _) {
           if (lawProvider.isLoading && lawProvider.laws.isEmpty) {
@@ -252,7 +253,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   controller: _searchController,
                   onChanged: _onSearchChanged,
                   decoration: InputDecoration(
-                    labelText: 'Search laws',
+                    labelText: l10n.searchHint,
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
                     fillColor: Theme.of(context)
@@ -301,7 +302,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          'Filtering by: $_selectedCategory',
+                          l10n.adminFilteringBy(_selectedCategory!),
                           style:
                           Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.secondary,
@@ -337,14 +338,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                 .withOpacity(0.4)),
                         const SizedBox(height: 16),
                         Text(
-                          'No laws found',
+                          l10n.searchNoResultsTitle,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           _selectedCategory != null
-                              ? 'No laws in "$_selectedCategory" category'
-                              : 'Try adjusting your search or add a new law.',
+                              ? l10n.adminNoLawsInCategory(_selectedCategory!)
+                              : l10n.adminNoLawsHint,
                           style:
                           Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context)
@@ -356,7 +357,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         const SizedBox(height: 20),
                         FilledButton.icon(
                           icon: const Icon(Icons.add),
-                          label: const Text('Add Law'),
+                          label: Text(l10n.adminAddLaw),
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -469,7 +470,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                             .primary,
                                         size: 20,
                                       ),
-                                      tooltip: 'Edit',
+                                      tooltip: l10n.edit,
                                       onPressed: () => Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -486,7 +487,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                             .error,
                                         size: 20,
                                       ),
-                                      tooltip: 'Delete',
+                                      tooltip: l10n.delete,
                                       onPressed: () async {
                                         final confirmed =
                                         await _confirmDelete(context);
@@ -497,9 +498,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                           if (success && context.mounted) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
-                                              const SnackBar(
+                                              SnackBar(
                                                 content: Text(
-                                                    'Law deleted successfully'),
+                                                    l10n.adminLawDeleted),
                                               ),
                                             );
                                             // Refresh total count
@@ -551,8 +552,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            'Page ${lawProvider.currentPage}'
-                                '${lawProvider.hasNextPage ? '' : ' · Last'}',
+                            '${l10n.adminPage(lawProvider.currentPage)}'
+                                '${lawProvider.hasNextPage ? '' : ' ${l10n.adminPageLast}'}',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
@@ -579,7 +580,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       // ── Add Law FAB ────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
-        label: const Text('Add Law'),
+        label: Text(l10n.adminAddLaw),
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const LawFormScreen()),

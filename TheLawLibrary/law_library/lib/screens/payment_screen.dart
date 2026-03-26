@@ -14,6 +14,7 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   late VideoPlayerController _videoController;
   bool _isVideoInitialized = false;
+  bool _videoError = false;
 
   @override
   void initState() {
@@ -30,6 +31,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       });
     } catch (e) {
       debugPrint('Error initializing video: $e');
+      if (mounted) setState(() => _videoError = true);
     }
   }
 
@@ -210,41 +212,92 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 const SizedBox(height: 16),
 
                 // Video player
-                Center(
-                  child: _isVideoInitialized
-                      ? AspectRatio(
-                    aspectRatio: _videoController.value.aspectRatio,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        VideoPlayer(_videoController),
-                        if (!_videoController.value.isPlaying)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.play_arrow,
-                                  color: Colors.white, size: 48),
-                              onPressed: () {
-                                setState(() {
-                                  _videoController.play();
-                                });
-                              },
-                            ),
+                if (_videoError)
+                  Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.videocam_off_outlined,
+                            size: 40,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withOpacity(0.5),
                           ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            AppLocalizations.of(context)!.videoUnavailable,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
-                      : const Center(
-                    child: CircularProgressIndicator(),
+                else if (_isVideoInitialized)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: AspectRatio(
+                      aspectRatio: _videoController.value.aspectRatio,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          VideoPlayer(_videoController),
+                          if (!_videoController.value.isPlaying)
+                            Container(
+                              color: Colors.black.withOpacity(0.4),
+                              child: const Icon(
+                                Icons.play_circle_fill,
+                                color: Colors.white,
+                                size: 56,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Center(child: CircularProgressIndicator()),
                   ),
-                ),
-                const SizedBox(height: 12),
 
-                // Video controls
-                if (_isVideoInitialized)
+                if (_isVideoInitialized && !_videoError) ...[
+                  const SizedBox(height: 8),
+                  // Progress bar
+                  VideoProgressIndicator(
+                    _videoController,
+                    allowScrubbing: true,
+                    colors: VideoProgressColors(
+                      playedColor: Theme.of(context).colorScheme.primary,
+                      bufferedColor: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.2),
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .surfaceVariant,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  // Controls
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -255,18 +308,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               : Icons.play_arrow,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        onPressed: () {
-                          setState(() {
-                            if (_videoController.value.isPlaying) {
-                              _videoController.pause();
-                            } else {
-                              _videoController.play();
-                            }
-                          });
-                        },
+                        onPressed: () => setState(() {
+                          _videoController.value.isPlaying
+                              ? _videoController.pause()
+                              : _videoController.play();
+                        }),
                       ),
                       IconButton(
-                        icon: Icon(Icons.replay, color: Theme.of(context).colorScheme.primary),
+                        icon: Icon(
+                          Icons.replay,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         onPressed: () {
                           _videoController.seekTo(Duration.zero);
                           _videoController.play();
@@ -274,6 +326,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ],
                   ),
+                ],
               ],
             ),
           )

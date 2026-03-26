@@ -426,4 +426,110 @@ class AppLocalizationsMs extends AppLocalizations {
     );
     return 'Halaman $page · $count $_temp0 untuk \"$query\"';
   }
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get copiedToClipboard => 'Disalin ke papan klip';
+
+  @override
+  String get videoUnavailable => 'Video tidak tersedia';
+
+  @override
+  String get themeModeLight => 'Terang';
+
+  @override
+  String get themeModeSystem => 'Sistem';
+
+  @override
+  String get themeModeDark => 'Gelap';
+
+  @override
+  String get clearRecentSearches => 'Kosongkan Carian Terkini';
+
+  @override
+  String get removeSearchHistory => 'Padam sejarah carian terkini';
+
+  @override
+  String get confirmClearSearches => 'Padam semua sejarah carian yang disimpan?';
+
+  @override
+  String get searchesCleared => 'Carian terkini telah dikosongkan';
+
+  @override
+  String get favoritesCleared => 'Kegemaran telah dikosongkan';
+
+  @override
+  String savedLawsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count undang-undang disimpan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sortByTitle => 'Isih mengikut Tajuk';
+
+  @override
+  String get sortByCategory => 'Isih mengikut Kategori';
+
+  @override
+  String get sortByChapter => 'Isih mengikut Bab';
+
+  @override
+  String get sortTitle => 'Tajuk';
+
+  @override
+  String get sortCategory => 'Kategori';
+
+  @override
+  String get sortChapter => 'Bab';
+
+  @override
+  String get adminPanelTitle => 'Panel Admin';
+
+  @override
+  String get adminCategories => 'Kategori';
+
+  @override
+  String get adminThisPage => 'Halaman Ini';
+
+  @override
+  String get adminFilterAll => 'Semua';
+
+  @override
+  String adminFilteringBy(Object category) {
+    return 'Menapis mengikut: $category';
+  }
+
+  @override
+  String get adminDeleteLawTitle => 'Padam Undang-undang';
+
+  @override
+  String get adminDeleteLawMessage => 'Tindakan ini tidak boleh dibatalkan.';
+
+  @override
+  String get adminAddLaw => 'Tambah Undang-undang';
+
+  @override
+  String get adminLawDeleted => 'Undang-undang berjaya dipadam';
+
+  @override
+  String adminNoLawsInCategory(Object category) {
+    return 'Tiada undang-undang dalam kategori \"$category\"';
+  }
+
+  @override
+  String get adminNoLawsHint => 'Cuba laraskan carian atau tambah undang-undang baru.';
+
+  @override
+  String adminPage(Object page) {
+    return 'Halaman $page';
+  }
+
+  @override
+  String get adminPageLast => '· Akhir';
 }

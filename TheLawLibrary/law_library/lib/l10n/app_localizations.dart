@@ -868,6 +868,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Page {page} · {count} {count, plural, one{result} other{results}} for \"{query}\"'**
   String searchFoundPage(Object page, num count, Object query);
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get copiedToClipboard;
+
+  /// No description provided for @videoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Video unavailable'**
+  String get videoUnavailable;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
+  /// No description provided for @clearRecentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Recent Searches'**
+  String get clearRecentSearches;
+
+  /// No description provided for @removeSearchHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove recent search history'**
+  String get removeSearchHistory;
+
+  /// No description provided for @confirmClearSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all saved search history?'**
+  String get confirmClearSearches;
+
+  /// No description provided for @searchesCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches cleared'**
+  String get searchesCleared;
+
+  /// No description provided for @favoritesCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites cleared'**
+  String get favoritesCleared;
+
+  /// No description provided for @savedLawsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} saved law} other{{count} saved laws}}'**
+  String savedLawsCount(num count);
+
+  /// No description provided for @sortByTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by Title'**
+  String get sortByTitle;
+
+  /// No description provided for @sortByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by Category'**
+  String get sortByCategory;
+
+  /// No description provided for @sortByChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by Chapter'**
+  String get sortByChapter;
+
+  /// No description provided for @sortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get sortTitle;
+
+  /// No description provided for @sortCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get sortCategory;
+
+  /// No description provided for @sortChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter'**
+  String get sortChapter;
+
+  /// No description provided for @adminPanelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Panel'**
+  String get adminPanelTitle;
+
+  /// No description provided for @adminCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get adminCategories;
+
+  /// No description provided for @adminThisPage.
+  ///
+  /// In en, this message translates to:
+  /// **'This Page'**
+  String get adminThisPage;
+
+  /// No description provided for @adminFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get adminFilterAll;
+
+  /// No description provided for @adminFilteringBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Filtering by: {category}'**
+  String adminFilteringBy(Object category);
+
+  /// No description provided for @adminDeleteLawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Law'**
+  String get adminDeleteLawTitle;
+
+  /// No description provided for @adminDeleteLawMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone.'**
+  String get adminDeleteLawMessage;
+
+  /// No description provided for @adminAddLaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Law'**
+  String get adminAddLaw;
+
+  /// No description provided for @adminLawDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Law deleted successfully'**
+  String get adminLawDeleted;
+
+  /// No description provided for @adminNoLawsInCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'No laws in \"{category}\" category'**
+  String adminNoLawsInCategory(Object category);
+
+  /// No description provided for @adminNoLawsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your search or add a new law.'**
+  String get adminNoLawsHint;
+
+  /// No description provided for @adminPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page}'**
+  String adminPage(Object page);
+
+  /// No description provided for @adminPageLast.
+  ///
+  /// In en, this message translates to:
+  /// **'· Last'**
+  String get adminPageLast;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

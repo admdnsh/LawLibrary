@@ -426,4 +426,111 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return 'Page $page · $count $_temp0 for \"$query\"';
   }
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get copiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get videoUnavailable => 'Video unavailable';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeDark => 'Dark';
+
+  @override
+  String get clearRecentSearches => 'Clear Recent Searches';
+
+  @override
+  String get removeSearchHistory => 'Remove recent search history';
+
+  @override
+  String get confirmClearSearches => 'Remove all saved search history?';
+
+  @override
+  String get searchesCleared => 'Recent searches cleared';
+
+  @override
+  String get favoritesCleared => 'Favorites cleared';
+
+  @override
+  String savedLawsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count saved laws',
+      one: '$count saved law',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sortByTitle => 'Sort by Title';
+
+  @override
+  String get sortByCategory => 'Sort by Category';
+
+  @override
+  String get sortByChapter => 'Sort by Chapter';
+
+  @override
+  String get sortTitle => 'Title';
+
+  @override
+  String get sortCategory => 'Category';
+
+  @override
+  String get sortChapter => 'Chapter';
+
+  @override
+  String get adminPanelTitle => 'Admin Panel';
+
+  @override
+  String get adminCategories => 'Categories';
+
+  @override
+  String get adminThisPage => 'This Page';
+
+  @override
+  String get adminFilterAll => 'All';
+
+  @override
+  String adminFilteringBy(Object category) {
+    return 'Filtering by: $category';
+  }
+
+  @override
+  String get adminDeleteLawTitle => 'Delete Law';
+
+  @override
+  String get adminDeleteLawMessage => 'This action cannot be undone.';
+
+  @override
+  String get adminAddLaw => 'Add Law';
+
+  @override
+  String get adminLawDeleted => 'Law deleted successfully';
+
+  @override
+  String adminNoLawsInCategory(Object category) {
+    return 'No laws in \"$category\" category';
+  }
+
+  @override
+  String get adminNoLawsHint => 'Try adjusting your search or add a new law.';
+
+  @override
+  String adminPage(Object page) {
+    return 'Page $page';
+  }
+
+  @override
+  String get adminPageLast => '· Last';
 }

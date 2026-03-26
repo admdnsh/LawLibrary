@@ -506,9 +506,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         if (!provider.isLoading && _filteredSuggestions.isEmpty)
           Text(
-            (provider.currentPage == 1 && !provider.hasNextPage)
-                ? l10n.searchFound(provider.laws.length, provider.searchQuery!)
-                : l10n.searchFoundPage(provider.currentPage, provider.laws.length, provider.searchQuery!),
+            l10n.searchFound(provider.laws.length, provider.searchQuery!),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.secondary,
             ),
