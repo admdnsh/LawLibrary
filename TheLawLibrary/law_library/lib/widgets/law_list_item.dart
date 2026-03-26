@@ -31,8 +31,27 @@ class LawListItem extends StatelessWidget {
       padding: EdgeInsets.only(
           bottom: AppTheme.getSpacing(AppTheme.baseSpacing12, uiDensity)),
       child: Slidable(
+        // ── Swipe right → view detail ────────────────────────────
+        startActionPane: ActionPane(
+          motion: const DrawerMotion(),
+          extentRatio: 0.28,
+          children: [
+            SlidableAction(
+              onPressed: (_) => onTap(),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              icon: Icons.open_in_new_rounded,
+              label: 'View',
+              borderRadius: BorderRadius.circular(
+                  AppTheme.getSpacing(AppTheme.borderRadiusMedium, uiDensity)),
+            ),
+          ],
+        ),
+
+        // ── Swipe left → favorite / unfavorite ───────────────────
         endActionPane: ActionPane(
-          motion: const ScrollMotion(),
+          motion: const DrawerMotion(),
+          extentRatio: 0.28,
           children: [
             SlidableAction(
               onPressed: (_) {
@@ -41,11 +60,36 @@ class LawListItem extends StatelessWidget {
                   listen: false,
                 );
                 lawProvider.toggleFavorite(law);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(
+                          law.isFavorite ? Icons.star_border : Icons.star,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          law.isFavorite
+                              ? 'Removed from favorites'
+                              : 'Added to favorites',
+                        ),
+                      ],
+                    ),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                );
               },
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor:
+                  law.isFavorite ? Colors.red.shade400 : Colors.amber.shade600,
               foregroundColor: Colors.white,
-              icon: law.isFavorite ? Icons.star : Icons.star_border,
-              label: law.isFavorite ? 'Unfavorite' : 'Favorite',
+              icon: law.isFavorite ? Icons.star_off_outlined : Icons.star,
+              label: law.isFavorite ? 'Unfavorite' : 'Favourite',
               borderRadius: BorderRadius.circular(
                   AppTheme.getSpacing(AppTheme.borderRadiusMedium, uiDensity)),
             ),
