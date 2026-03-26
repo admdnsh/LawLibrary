@@ -56,7 +56,7 @@ class _LawDetailScreenState extends State<LawDetailScreen> {
               if (success && context.mounted) {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Law deleted successfully')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.adminLawDeleted)),
                 );
               }
             },

@@ -108,7 +108,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 child: Row(
                   children: [
                     Text(
-                      l10n.savedLawsCount(total),
+                      _searchQuery.isNotEmpty && processed.length != total
+                          ? '${processed.length} of ${l10n.savedLawsCount(total)}'
+                          : l10n.savedLawsCount(total),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Theme.of(context).colorScheme.secondary,
                           ),
@@ -198,6 +200,41 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             ),
                         textAlign: TextAlign.center,
                       ),
+                      if (_searchQuery.isEmpty) ...[
+                        SizedBox(height: _spacing(AppTheme.baseSpacing16)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.swipe_left_outlined,
+                                  size: 18,
+                                  color:
+                                      Theme.of(context).colorScheme.primary),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Swipe left on any law to save it',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ]
                     ],
                   ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.95, 0.95)),
                 ),

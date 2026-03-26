@@ -235,22 +235,51 @@ class SettingsScreen extends StatelessWidget {
     required ValueChanged<T> onChanged,
     IconData? icon,
   }) {
-    return ListTile(
-      leading: icon != null ? Icon(icon) : null,
-      title: Text(title),
-      subtitle: subtitle == null || subtitle.isEmpty ? null : Text(subtitle),
-      trailing: DropdownButton<T>(
-        value: value,
-        underline: const SizedBox(),
-        items: items
-            .map(
-              (item) => DropdownMenuItem<T>(
-                value: item,
-                child: Text(labelBuilder(item)),
-              ),
-            )
-            .toList(),
-        onChanged: (v) => v != null ? onChanged(v) : null,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(
+              icon,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurfaceVariant
+                  .withOpacity(0.75),
+            ),
+            const SizedBox(width: 16),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.bodyLarge),
+                if (subtitle != null && subtitle.isNotEmpty)
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+              ],
+            ),
+          ),
+          DropdownButton<T>(
+            value: value,
+            underline: const SizedBox(),
+            isDense: true,
+            items: items
+                .map(
+                  (item) => DropdownMenuItem<T>(
+                    value: item,
+                    child: Text(labelBuilder(item)),
+                  ),
+                )
+                .toList(),
+            onChanged: (v) => v != null ? onChanged(v) : null,
+          ),
+        ],
       ),
     );
   }
