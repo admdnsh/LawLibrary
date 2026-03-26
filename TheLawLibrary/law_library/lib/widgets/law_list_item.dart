@@ -88,7 +88,7 @@ class LawListItem extends StatelessWidget {
               backgroundColor:
                   law.isFavorite ? Colors.red.shade400 : Colors.amber.shade600,
               foregroundColor: Colors.white,
-              icon: law.isFavorite ? Icons.star_off_outlined : Icons.star,
+              icon: law.isFavorite ? Icons.star_border : Icons.star,
               label: law.isFavorite ? 'Unfavorite' : 'Favourite',
               borderRadius: BorderRadius.circular(
                   AppTheme.getSpacing(AppTheme.borderRadiusMedium, uiDensity)),
