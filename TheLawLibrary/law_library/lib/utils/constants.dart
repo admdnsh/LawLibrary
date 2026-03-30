@@ -1,8 +1,8 @@
 class ApiConstants {
   // Base URL for the API (XAMPP)
   static const String baseUrl =
-      'http://localhost:80/law_library_api'; // For Android emulator // update this if testing on a network. (use address of network)
-  // Use 'http://localhost:80/law_library_api' for iOS simulator
+      'https://law-library-api-production.up.railway.app'; // Railway live server
+  // static const String baseUrl = 'http://localhost:80/law_library_api'; // XAMPP local (uncomment to switch back)
 
   // Default pagination values
   static const int defaultItemsPerPage = 10;
