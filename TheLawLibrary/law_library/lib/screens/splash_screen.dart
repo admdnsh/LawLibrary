@@ -142,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   const SizedBox(height: 10),
 
                   Text(
-                    'v1.0.0',
+                    'v2.0.0',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context)
                           .colorScheme
