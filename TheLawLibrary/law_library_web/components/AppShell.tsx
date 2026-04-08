@@ -1,11 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Sidebar from './Sidebar';
+import { getSession } from '@/lib/auth';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Global auth guard — redirect to login if no session
+  useEffect(() => {
+    const isLoginPage = pathname === '/admin';
+    if (!isLoginPage && !getSession()) {
+      router.replace('/admin');
+    } else {
+      setAuthChecked(true);
+    }
+  }, [pathname, router]);
 
   // Close mobile sidebar on Escape
   useEffect(() => {
@@ -16,11 +31,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  const isLoginPage = pathname === '/admin';
+
+  // Don't render the shell until auth check is done (avoids flash)
+  if (!authChecked && !isLoginPage) return null;
+
   return (
     <>
-      {/* Mobile top bar */}
+      {/* Mobile top bar — hidden on login page */}
       <div
-        className="lg:hidden flex items-center justify-between px-4 py-3 border-b shrink-0"
+        className={`${isLoginPage ? 'hidden' : ''} lg:hidden flex items-center justify-between px-4 py-3 border-b shrink-0`}
         style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
       >
         <div className="flex items-center gap-2">
@@ -40,8 +60,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </button>
       </div>
 
-      {/* Mobile sidebar drawer */}
-      {sidebarOpen && (
+      {/* Mobile sidebar drawer — hidden on login page */}
+      {!isLoginPage && sidebarOpen && (
         <>
           <div
             className="lg:hidden fixed inset-0 z-40 bg-black/50"
@@ -53,10 +73,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </>
       )}
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:flex">
-        <Sidebar />
-      </div>
+      {/* Desktop sidebar — hidden on login page */}
+      {!isLoginPage && (
+        <div className="hidden lg:flex">
+          <Sidebar />
+        </div>
+      )}
 
       {/* Main content */}
       <main
