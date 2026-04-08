@@ -1,60 +1,79 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import Fuse from 'fuse.js';
 import type { Law } from '@/types';
 import { getLaws, getCategories } from '@/lib/api';
 import CategoryBadge from '@/components/CategoryBadge';
 import LawDetailPanel from '@/components/LawDetailPanel';
 
-const LIMIT = 15;
+const PAGE_SIZE = 15;
 
 export default function HomePage() {
-  const [laws, setLaws] = useState<Law[]>([]);
+  const [allLaws, setAllLaws] = useState<Law[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedLaw, setSelectedLaw] = useState<Law | null>(null);
-  const [searchInput, setSearchInput] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
+  // Load all laws once on mount
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
-  }, []);
-
-  const fetchLaws = useCallback(async (s: string, cat: string, p: number) => {
     setLoading(true);
-    setError('');
-    try {
-      const data = await getLaws({ search: s, category: cat, page: p, limit: LIMIT });
-      setLaws(data);
-      setHasMore(data.length === LIMIT);
-      setFocusedIndex(-1);
-      itemRefs.current = [];
-    } catch {
-      setLaws([]);
-      setHasMore(false);
-      setError('Failed to load laws. Check your connection.');
-    } finally {
-      setLoading(false);
-    }
+    Promise.all([
+      getLaws({ limit: 9999 }),
+      getCategories(),
+    ])
+      .then(([lawData, catData]) => {
+        setAllLaws(lawData);
+        setCategories(catData);
+      })
+      .catch(() => setError('Failed to load laws. Check your connection.'))
+      .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    fetchLaws(search, category, page);
-  }, [search, category, page, fetchLaws]);
+  // Fuse instance — rebuilt only when allLaws changes
+  const fuse = useMemo(() => new Fuse(allLaws, {
+    keys: [
+      { name: 'Title',       weight: 0.5 },
+      { name: 'Chapter',     weight: 0.25 },
+      { name: 'Category',    weight: 0.15 },
+      { name: 'Description', weight: 0.1 },
+    ],
+    threshold: 0.4,
+    ignoreLocation: true,
+  }), [allLaws]);
 
-  // Auto-search: fires 400ms after the user stops typing
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Filtered + searched results
+  const results = useMemo(() => {
+    let list = search
+      ? fuse.search(search).map((r) => r.item)
+      : allLaws;
+    if (category) list = list.filter((l) => l.Category === category);
+    return list;
+  }, [search, category, allLaws, fuse]);
+
+  // Paginated slice
+  const paginated = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return results.slice(start, start + PAGE_SIZE);
+  }, [results, page]);
+
+  const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
+
+  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(searchInput);
       setPage(1);
-    }, 400);
+      setFocusedIndex(-1);
+      itemRefs.current = [];
+    }, 250);
     return () => clearTimeout(timer);
   }, [searchInput]);
 
@@ -69,8 +88,8 @@ export default function HomePage() {
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    setPage(1);
     setSearch(searchInput);
+    setPage(1);
     setSelectedLaw(null);
   }
 
@@ -91,7 +110,7 @@ export default function HomePage() {
   function handleListKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      const next = Math.min(focusedIndex + 1, laws.length - 1);
+      const next = Math.min(focusedIndex + 1, paginated.length - 1);
       setFocusedIndex(next);
       itemRefs.current[next]?.focus();
     } else if (e.key === 'ArrowUp') {
@@ -207,10 +226,11 @@ export default function HomePage() {
 
         {/* Law list */}
         <div className="flex-1 overflow-y-auto" onKeyDown={handleListKeyDown}>
-          {!loading && !error && laws.length > 0 && (
+          {!loading && !error && results.length > 0 && (
             <div className="px-4 py-2 border-b flex items-center" style={{ borderColor: 'var(--border)' }}>
               <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
-                {laws.length}{hasMore ? '+' : ''} result{laws.length !== 1 ? 's' : ''}
+                {results.length} result{results.length !== 1 ? 's' : ''}
+                {search && <span className="ml-1 text-blue-600 dark:text-blue-400">· fuzzy match</span>}
               </span>
             </div>
           )}
@@ -225,13 +245,13 @@ export default function HomePage() {
               </svg>
               <p className="text-sm" style={{ color: 'var(--muted)' }}>{error}</p>
               <button
-                onClick={() => fetchLaws(search, category, page)}
+                onClick={() => window.location.reload()}
                 className="text-xs px-3 py-1.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition"
               >
                 Retry
               </button>
             </div>
-          ) : laws.length === 0 ? (
+          ) : results.length === 0 ? (
             <div
               className="flex flex-col items-center justify-center h-32 text-center px-4"
               style={{ color: 'var(--muted)' }}
@@ -248,7 +268,7 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-              {laws.map((law, index) => (
+              {paginated.map((law, index) => (
                 <button
                   key={law.Chapter}
                   ref={(el) => { itemRefs.current[index] = el; }}
@@ -280,30 +300,32 @@ export default function HomePage() {
               ))}
 
               {/* Pagination */}
-              <div
-                className="flex items-center justify-between px-4 py-3"
-                style={{ borderTop: '1px solid var(--border)' }}
-              >
-                <button
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => p - 1)}
-                  className="text-xs px-3 py-1.5 rounded-lg border transition disabled:opacity-40"
-                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+              {totalPages > 1 && (
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderTop: '1px solid var(--border)' }}
                 >
-                  Previous
-                </button>
-                <span className="text-xs" style={{ color: 'var(--muted)' }}>
-                  Page {page}
-                </span>
-                <button
-                  disabled={!hasMore}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="text-xs px-3 py-1.5 rounded-lg border transition disabled:opacity-40"
-                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
-                >
-                  Next
-                </button>
-              </div>
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => p - 1)}
+                    className="text-xs px-3 py-1.5 rounded-lg border transition disabled:opacity-40"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  >
+                    Previous
+                  </button>
+                  <span className="text-xs" style={{ color: 'var(--muted)' }}>
+                    Page {page} of {totalPages}
+                  </span>
+                  <button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="text-xs px-3 py-1.5 rounded-lg border transition disabled:opacity-40"
+                    style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
