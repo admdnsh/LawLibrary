@@ -250,6 +250,82 @@ class ApiService {
     }
   }
 
+  // User management (admin only)
+  Future<List<User>> getUsers() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/get_users.php'));
+      logger.d('Get Users Response Status: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        if (response.body.isEmpty) throw Exception('Empty response');
+        final Map<String, dynamic> body = json.decode(response.body);
+        if (body['success'] != true) {
+          throw Exception(body['message'] ?? 'Failed to load users');
+        }
+        final List<dynamic> data = body['users'] as List<dynamic>;
+        return data.map((j) => User.fromJson(j)).toList();
+      } else {
+        throw Exception('Failed to load users: ${response.statusCode}');
+      }
+    } catch (e) {
+      logger.e('Get Users Error: $e');
+      throw Exception('Failed to load users: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> createUser(
+      String username, String hashedPassword, String role) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/create_user.php'),
+        body: {
+          'username': username,
+          'password': hashedPassword,
+          'role': role,
+        },
+      );
+      logger.d('Create User Response: ${response.body}');
+      if (response.body.isEmpty) throw Exception('Empty response');
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      logger.e('Create User Error: $e');
+      throw Exception('Failed to create user: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteUser(String username) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/delete_user.php'),
+        body: {'username': username},
+      );
+      logger.d('Delete User Response: ${response.body}');
+      if (response.body.isEmpty) throw Exception('Empty response');
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      logger.e('Delete User Error: $e');
+      throw Exception('Failed to delete user: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> resetUserPassword(
+      String username, String hashedPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/reset_user_password.php'),
+        body: {
+          'username': username,
+          'new_password': hashedPassword,
+        },
+      );
+      logger.d('Reset Password Response: ${response.body}');
+      if (response.body.isEmpty) throw Exception('Empty response');
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      logger.e('Reset Password Error: $e');
+      throw Exception('Failed to reset password: $e');
+    }
+  }
+
   Future<bool> deleteLaw(String chapter) async {
     try {
       final response = await http.post(

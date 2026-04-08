@@ -8,6 +8,7 @@ import 'package:law_library/providers/law_provider.dart';
 import 'package:law_library/providers/theme_provider.dart';
 import 'package:law_library/theme/app_theme.dart';
 import 'package:law_library/screens/law_form_screen.dart';
+import 'package:law_library/screens/manage_users_screen.dart';
 import 'package:law_library/services/api_service.dart';
 import 'package:law_library/l10n/app_localizations.dart';
 
@@ -231,7 +232,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.adminPanelTitle)),
+      appBar: AppBar(
+        title: Text(l10n.adminPanelTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.manage_accounts_outlined),
+            tooltip: 'Manage Users',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ManageUsersScreen()),
+            ),
+          ),
+        ],
+      ),
       body: Consumer<LawProvider>(
         builder: (context, lawProvider, _) {
           if (lawProvider.isLoading && lawProvider.laws.isEmpty) {
