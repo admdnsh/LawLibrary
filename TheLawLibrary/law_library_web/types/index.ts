@@ -19,10 +19,9 @@ export interface AdminUser {
 }
 
 export interface User {
-  id: number;
   Username: string;
   Role: UserRole;
-  created_at: string;
+  CreatedAt: string;
 }
 
 export interface ApiResponse {

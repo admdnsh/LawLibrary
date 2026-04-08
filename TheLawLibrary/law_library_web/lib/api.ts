@@ -86,8 +86,8 @@ export async function createUser(username: string, password: string, role: UserR
   return res.json();
 }
 
-export async function deleteUser(id: number): Promise<ApiResponse> {
-  const body = new URLSearchParams({ id: String(id) });
+export async function deleteUser(username: string): Promise<ApiResponse> {
+  const body = new URLSearchParams({ username });
   const res = await fetch(`${BASE_URL}/delete_user.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -96,8 +96,8 @@ export async function deleteUser(id: number): Promise<ApiResponse> {
   return res.json();
 }
 
-export async function resetUserPassword(id: number, newPassword: string): Promise<ApiResponse> {
-  const body = new URLSearchParams({ id: String(id), new_password: newPassword });
+export async function resetUserPassword(username: string, newPassword: string): Promise<ApiResponse> {
+  const body = new URLSearchParams({ username, new_password: newPassword });
   const res = await fetch(`${BASE_URL}/reset_user_password.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

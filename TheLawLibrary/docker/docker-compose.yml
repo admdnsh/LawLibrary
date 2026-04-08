@@ -1,0 +1,55 @@
+services:
+  api:
+    image: php:8.2-apache
+    container_name: lawlibrary_api
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+    depends_on:
+      - mysql
+    networks:
+      - lawlibrary_network
+    volumes:
+      - ../api:/var/www/html
+    command: >
+      bash -c "docker-php-ext-install pdo pdo_mysql mysqli
+      && apache2-foreground"
+
+  mysql:
+    image: mysql:8.0
+    container_name: lawlibrary_mysql
+    restart: unless-stopped
+    ports:
+      - "3311:3306"
+    environment:
+      MYSQL_DATABASE: law_library
+      MYSQL_ROOT_PASSWORD: lawlibrary123
+      MYSQL_PASSWORD: lawlibrary123
+    volumes:
+      - lawlibrary_data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/custom.cnf
+    networks:
+      - lawlibrary_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: lawlibrary_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8087:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: lawlibrary123
+    depends_on:
+      - mysql
+    networks:
+      - lawlibrary_network
+
+volumes:
+  lawlibrary_data:
+    driver: local
+
+networks:
+  lawlibrary_network:
+    driver: bridge
