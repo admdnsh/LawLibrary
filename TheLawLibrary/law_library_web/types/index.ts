@@ -10,9 +10,19 @@ export interface Law {
   Fifth_Compound_Fine?: string;
 }
 
+export type UserRole = 'admin' | 'officer';
+
 export interface AdminUser {
   Username: string;
+  role: UserRole;
   isAdmin: number;
+}
+
+export interface User {
+  id: number;
+  Username: string;
+  Role: UserRole;
+  created_at: string;
 }
 
 export interface ApiResponse {

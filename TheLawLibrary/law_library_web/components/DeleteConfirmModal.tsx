@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 interface Props {
   chapter: string;
   title: string;
@@ -8,6 +10,15 @@ interface Props {
 }
 
 export default function DeleteConfirmModal({ chapter, title, onConfirm, onClose }: Props) {
+  // Close on Escape
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   async function handleConfirm() {
     await onConfirm();
   }

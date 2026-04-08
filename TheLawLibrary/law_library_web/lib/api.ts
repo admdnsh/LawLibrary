@@ -1,4 +1,4 @@
-import type { Law, ApiResponse } from '@/types';
+import type { Law, ApiResponse, User, UserRole } from '@/types';
 
 const BASE_URL = 'https://law-library-api-production.up.railway.app';
 
@@ -59,9 +59,46 @@ export async function getLawCount(): Promise<number> {
 export async function login(
   username: string,
   password: string
-): Promise<{ success: boolean; message: string; user?: { Username: string; isAdmin: number } }> {
+): Promise<{ success: boolean; message: string; user?: { Username: string; role: UserRole; isAdmin: number } }> {
   const body = new URLSearchParams({ username, password });
   const res = await fetch(`${BASE_URL}/login.php`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+  return res.json();
+}
+
+export async function getUsers(): Promise<User[]> {
+  const res = await fetch(`${BASE_URL}/get_users.php`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch users');
+  const data = await res.json();
+  return data?.users ?? [];
+}
+
+export async function createUser(username: string, password: string, role: UserRole): Promise<ApiResponse> {
+  const body = new URLSearchParams({ username, password, role });
+  const res = await fetch(`${BASE_URL}/create_user.php`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+  return res.json();
+}
+
+export async function deleteUser(id: number): Promise<ApiResponse> {
+  const body = new URLSearchParams({ id: String(id) });
+  const res = await fetch(`${BASE_URL}/delete_user.php`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+  return res.json();
+}
+
+export async function resetUserPassword(id: number, newPassword: string): Promise<ApiResponse> {
+  const body = new URLSearchParams({ id: String(id), new_password: newPassword });
+  const res = await fetch(`${BASE_URL}/reset_user_password.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),

@@ -171,7 +171,7 @@ export default function AdminDashboardPage() {
             <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
               <h2 className="font-semibold">Quick Actions</h2>
             </div>
-            <div className="grid grid-cols-2 gap-3 p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
               <a
                 href="/admin/laws"
                 className="flex items-center gap-3 p-4 rounded-xl border transition hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700"

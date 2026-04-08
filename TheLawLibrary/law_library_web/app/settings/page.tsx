@@ -25,15 +25,15 @@ function Row({ icon, label, sublabel, children }: {
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3.5 border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
-      <div className="flex items-center gap-3">
-        <span style={{ color: 'var(--muted)' }}>{icon}</span>
-        <div>
+    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="shrink-0" style={{ color: 'var(--muted)' }}>{icon}</span>
+        <div className="min-w-0">
           <p className="text-sm font-medium">{label}</p>
-          {sublabel && <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{sublabel}</p>}
+          {sublabel && <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--muted)' }}>{sublabel}</p>}
         </div>
       </div>
-      {children}
+      <div className="shrink-0">{children}</div>
     </div>
   );
 }

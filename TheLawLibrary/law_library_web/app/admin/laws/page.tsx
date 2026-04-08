@@ -103,29 +103,29 @@ export default function AdminLawsPage() {
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Top bar */}
       <div
-        className="flex items-center justify-between px-6 py-4 border-b shrink-0"
+        className="flex items-center justify-between px-4 sm:px-6 py-4 border-b shrink-0"
         style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
       >
-        <div>
-          <h1 className="text-xl font-bold">Manage Laws</h1>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl font-bold">Manage Laws</h1>
+          <p className="text-xs mt-0.5 hidden sm:block" style={{ color: 'var(--muted)' }}>
             Create, edit, and delete law records
           </p>
         </div>
         <button
           onClick={() => { setEditLaw(null); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-900 text-white text-sm font-semibold rounded-xl hover:bg-blue-800 transition"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-900 text-white text-sm font-semibold rounded-xl hover:bg-blue-800 transition shrink-0 ml-3"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
             <path fillRule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clipRule="evenodd" />
           </svg>
-          Add Law
+          <span className="hidden sm:inline">Add Law</span>
         </button>
       </div>
 
       {/* Filters */}
       <div
-        className="flex items-center gap-3 px-6 py-3 border-b shrink-0 flex-wrap"
+        className="flex items-center gap-3 px-4 sm:px-6 py-3 border-b shrink-0 flex-wrap"
         style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
       >
         <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]">
@@ -204,22 +204,22 @@ export default function AdminLawsPage() {
             </div>
           </div>
         ) : (
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse min-w-[480px]">
             <thead>
               <tr style={{ background: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)', width: '100px' }}>
                   Chapter
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)', width: '130px' }}>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide hidden sm:table-cell" style={{ color: 'var(--muted)', width: '130px' }}>
                   Category
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>
                   Title
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)', width: '160px' }}>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style={{ color: 'var(--muted)', width: '160px' }}>
                   Compound Fine
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-right" style={{ color: 'var(--muted)', width: '120px' }}>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-right" style={{ color: 'var(--muted)', width: '100px' }}>
                   Actions
                 </th>
               </tr>
@@ -237,30 +237,30 @@ export default function AdminLawsPage() {
                   <td className="px-4 py-3.5 font-mono text-xs text-blue-900 dark:text-blue-400 font-semibold whitespace-nowrap tracking-wide">
                     {law.Chapter}
                   </td>
-                  <td className="px-4 py-3.5">
+                  <td className="px-4 py-3.5 hidden sm:table-cell">
                     <CategoryBadge category={law.Category} />
                   </td>
                   <td className="px-4 py-3.5 max-w-xs">
                     <p className="line-clamp-2 leading-snug text-sm">{law.Title}</p>
                   </td>
-                  <td className="px-4 py-3.5 text-emerald-600 dark:text-emerald-400 font-semibold text-sm whitespace-nowrap">
+                  <td className="px-4 py-3.5 text-emerald-600 dark:text-emerald-400 font-semibold text-sm whitespace-nowrap hidden md:table-cell">
                     {law.Compound_Fine || <span style={{ color: 'var(--muted)' }}>—</span>}
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => { setEditLaw(law); setShowForm(true); }}
-                        className="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-900 dark:hover:text-blue-300"
+                        className="px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-900 dark:hover:text-blue-300"
                         style={{ color: 'var(--foreground)', border: '1px solid var(--border)' }}
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => setDeleteTarget(law)}
-                        className="px-3 py-1.5 text-xs rounded-lg font-medium transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                        className="px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
                         style={{ border: '1px solid #fecaca' }}
                       >
-                        Delete
+                        Del
                       </button>
                     </div>
                   </td>
@@ -274,7 +274,7 @@ export default function AdminLawsPage() {
       {/* Pagination */}
       {!loading && laws.length > 0 && (
         <div
-          className="flex items-center justify-between px-6 py-3 border-t shrink-0"
+          className="flex items-center justify-between px-4 sm:px-6 py-3 border-t shrink-0"
           style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
         >
           <span className="text-xs" style={{ color: 'var(--muted)' }}>

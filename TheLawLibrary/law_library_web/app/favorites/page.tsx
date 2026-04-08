@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Law } from '@/types';
 import { getFavorites, removeFavorite } from '@/lib/favorites';
 import CategoryBadge from '@/components/CategoryBadge';
@@ -11,10 +11,35 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<Law[]>([]);
   const [search, setSearch] = useState('');
   const [selectedLaw, setSelectedLaw] = useState<Law | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     setFavorites(getFavorites());
   }, []);
+
+  // Close detail panel on Escape
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setSelectedLaw(null);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  function handleListKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(focusedIndex + 1, filtered.length - 1);
+      setFocusedIndex(next);
+      itemRefs.current[next]?.focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(focusedIndex - 1, 0);
+      setFocusedIndex(prev);
+      itemRefs.current[prev]?.focus();
+    }
+  }
 
   function handleRemove(chapter: string) {
     removeFavorite(chapter);
@@ -33,7 +58,7 @@ export default function FavoritesPage() {
     <div className="flex h-screen overflow-hidden">
       {/* Left panel */}
       <div
-        className="flex flex-col w-full lg:w-96 xl:w-[420px] shrink-0 border-r"
+        className={`flex-col shrink-0 border-r w-full lg:w-96 xl:w-[420px] ${selectedLaw ? 'hidden lg:flex' : 'flex'}`}
         style={{ borderColor: 'var(--border)' }}
       >
         {/* Header */}
@@ -69,7 +94,7 @@ export default function FavoritesPage() {
         </div>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" onKeyDown={handleListKeyDown}>
           {favorites.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center px-4 gap-4">
               <div
@@ -95,7 +120,7 @@ export default function FavoritesPage() {
               No results for &ldquo;{search}&rdquo;
             </div>
           ) : (
-            filtered.map((law) => (
+            filtered.map((law, index) => (
               <div
                 key={law.Chapter}
                 className={`border-b transition-colors ${
@@ -110,8 +135,10 @@ export default function FavoritesPage() {
               >
                 <div className="flex items-start gap-2 px-4 pt-3.5 pb-2">
                   <button
-                    className="flex-1 text-left min-w-0"
-                    onClick={() => setSelectedLaw(law)}
+                    ref={(el) => { itemRefs.current[index] = el; }}
+                    className="flex-1 text-left min-w-0 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 rounded"
+                    onClick={() => { setSelectedLaw(law); setFocusedIndex(index); }}
+                    onFocus={() => setFocusedIndex(index)}
                   >
                     <div className="flex items-start justify-between gap-2 mb-1.5">
                       <span className="text-xs font-mono text-blue-900 dark:text-blue-400 font-semibold tracking-wide">

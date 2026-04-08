@@ -40,6 +40,15 @@ export default function LawFormModal({ law, categories, onSave, onClose }: Props
 
   const isEdit = !!law;
 
+  // Close on Escape
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   useEffect(() => {
     if (law) {
       setForm({ ...EMPTY, ...law });
@@ -116,7 +125,7 @@ export default function LawFormModal({ law, categories, onSave, onClose }: Props
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
           <div className="px-6 py-4 space-y-4">
             {/* Chapter + Category row */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--muted)' }}>
                   Chapter *

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Law } from '@/types';
 import { getLaws, getCategories } from '@/lib/api';
 import CategoryBadge from '@/components/CategoryBadge';
@@ -16,8 +16,11 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedLaw, setSelectedLaw] = useState<Law | null>(null);
   const [searchInput, setSearchInput] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => {});
@@ -25,12 +28,17 @@ export default function HomePage() {
 
   const fetchLaws = useCallback(async (s: string, cat: string, p: number) => {
     setLoading(true);
+    setError('');
     try {
       const data = await getLaws({ search: s, category: cat, page: p, limit: LIMIT });
       setLaws(data);
       setHasMore(data.length === LIMIT);
+      setFocusedIndex(-1);
+      itemRefs.current = [];
     } catch {
       setLaws([]);
+      setHasMore(false);
+      setError('Failed to load laws. Check your connection.');
     } finally {
       setLoading(false);
     }
@@ -39,6 +47,25 @@ export default function HomePage() {
   useEffect(() => {
     fetchLaws(search, category, page);
   }, [search, category, page, fetchLaws]);
+
+  // Auto-search: fires 400ms after the user stops typing
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Close detail panel on Escape
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setSelectedLaw(null);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -61,11 +88,25 @@ export default function HomePage() {
     setSelectedLaw(null);
   }
 
+  function handleListKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(focusedIndex + 1, laws.length - 1);
+      setFocusedIndex(next);
+      itemRefs.current[next]?.focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(focusedIndex - 1, 0);
+      setFocusedIndex(prev);
+      itemRefs.current[prev]?.focus();
+    }
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Left panel: list */}
       <div
-        className="flex flex-col w-full lg:w-96 xl:w-[420px] shrink-0 border-r"
+        className={`flex-col shrink-0 border-r w-full lg:w-96 xl:w-[420px] ${selectedLaw ? 'hidden lg:flex' : 'flex'}`}
         style={{ borderColor: 'var(--border)' }}
       >
         {/* Search bar */}
@@ -165,8 +206,8 @@ export default function HomePage() {
         </div>
 
         {/* Law list */}
-        <div className="flex-1 overflow-y-auto">
-          {!loading && laws.length > 0 && (
+        <div className="flex-1 overflow-y-auto" onKeyDown={handleListKeyDown}>
+          {!loading && !error && laws.length > 0 && (
             <div className="px-4 py-2 border-b flex items-center" style={{ borderColor: 'var(--border)' }}>
               <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
                 {laws.length}{hasMore ? '+' : ''} result{laws.length !== 1 ? 's' : ''}
@@ -176,6 +217,19 @@ export default function HomePage() {
           {loading ? (
             <div className="flex items-center justify-center h-32">
               <div className="w-6 h-6 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-32 text-center px-4 gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>{error}</p>
+              <button
+                onClick={() => fetchLaws(search, category, page)}
+                className="text-xs px-3 py-1.5 bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition"
+              >
+                Retry
+              </button>
             </div>
           ) : laws.length === 0 ? (
             <div
@@ -194,11 +248,13 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-              {laws.map((law) => (
+              {laws.map((law, index) => (
                 <button
                   key={law.Chapter}
-                  onClick={() => setSelectedLaw(law)}
-                  className={`w-full text-left px-4 py-3.5 border-b transition-colors ${
+                  ref={(el) => { itemRefs.current[index] = el; }}
+                  onClick={() => { setSelectedLaw(law); setFocusedIndex(index); }}
+                  onFocus={() => setFocusedIndex(index)}
+                  className={`w-full text-left px-4 py-3.5 border-b transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 ${
                     selectedLaw?.Chapter === law.Chapter
                       ? 'bg-blue-50 dark:bg-blue-900/20'
                       : 'hover:bg-gray-50 dark:hover:bg-white/5'
