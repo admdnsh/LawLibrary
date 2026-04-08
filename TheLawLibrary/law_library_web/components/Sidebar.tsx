@@ -72,7 +72,6 @@ export default function Sidebar() {
     ] : [
       { href: '/admin', label: 'Admin Panel', icon: <ShieldIcon /> },
     ]),
-    { href: '/settings', label: 'Settings', icon: <SettingsIcon /> },
   ];
 
   function handleLogout() {
@@ -130,6 +129,19 @@ export default function Sidebar() {
             <p className="text-sm font-medium text-white truncate">{adminName}</p>
           </div>
         )}
+
+        {/* Settings */}
+        <Link
+          href="/settings"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            pathname === '/settings'
+              ? 'bg-white/20 text-white'
+              : 'text-blue-200 hover:bg-white/10 hover:text-white'
+          }`}
+        >
+          <SettingsIcon />
+          Settings
+        </Link>
 
         {/* Logout */}
         {isAdmin && (
