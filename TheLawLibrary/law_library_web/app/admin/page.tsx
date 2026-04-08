@@ -15,7 +15,10 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (isLoggedIn()) router.replace('/admin/laws');
+    if (isLoggedIn()) {
+      const session = JSON.parse(localStorage.getItem('law_library_admin') || '{}');
+      router.replace(session?.isAdmin === 1 ? '/admin/dashboard' : '/');
+    }
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -27,7 +30,7 @@ export default function AdminLoginPage() {
       const result = await login(username, hashed);
       if (result.success && result.user) {
         saveSession(result.user);
-        router.push('/admin/laws');
+        router.push(result.user.isAdmin === 1 ? '/admin/dashboard' : '/');
       } else {
         setError(result.message || 'Invalid credentials');
       }
@@ -46,7 +49,7 @@ export default function AdminLoginPage() {
           <div className="w-16 h-16 rounded-full bg-blue-900 flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-lg ring-4 ring-blue-900/20">
             <Image src="/logo.png" alt="RBPF Logo" width={52} height={52} className="object-contain" />
           </div>
-          <h1 className="text-2xl font-bold">Admin Portal</h1>
+          <h1 className="text-2xl font-bold">Sign In</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Law Library · Royal Brunei Police Force</p>
         </div>
 

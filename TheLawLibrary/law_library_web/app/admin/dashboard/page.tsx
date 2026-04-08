@@ -23,7 +23,9 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!getSession()) { router.replace('/admin'); return; }
+    const session = getSession();
+    if (!session) { router.replace('/admin'); return; }
+    if (session.isAdmin !== 1) { router.replace('/'); return; }
     loadDashboard();
   }, [router]);
 

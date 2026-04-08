@@ -47,13 +47,19 @@ const LogoutIcon = () => (
 export default function Sidebar() {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminName, setAdminName] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
     const session = getSession();
     if (session) {
-      setIsAdmin(true);
-      setAdminName(session.Username);
+      setIsLoggedIn(true);
+      setUsername(session.Username);
+      setIsAdmin(session.isAdmin === 1);
+    } else {
+      setIsLoggedIn(false);
+      setUsername('');
+      setIsAdmin(false);
     }
   }, [pathname]);
 
@@ -76,16 +82,17 @@ export default function Sidebar() {
       { href: '/admin/dashboard', label: 'Dashboard', icon: <ChartIcon /> },
       { href: '/admin/laws', label: 'Manage Laws', icon: <ShieldIcon /> },
       { href: '/admin/users', label: 'Manage Users', icon: <UsersIcon /> },
-    ] : [
-      { href: '/admin', label: 'Admin Panel', icon: <ShieldIcon /> },
-    ]),
+    ] : !isLoggedIn ? [
+      { href: '/admin', label: 'Login', icon: <ShieldIcon /> },
+    ] : []),
   ];
 
   function handleLogout() {
     clearSession();
     setIsAdmin(false);
-    setAdminName('');
-    window.location.href = '/admin';
+    setIsLoggedIn(false);
+    setUsername('');
+    window.location.href = '/';
   }
 
   return (
@@ -129,11 +136,16 @@ export default function Sidebar() {
 
       {/* Bottom section */}
       <div className="p-3 border-t border-blue-800 space-y-1">
-        {/* Admin info */}
-        {isAdmin && (
+        {/* User info */}
+        {isLoggedIn && (
           <div className="px-3 py-2 mb-1">
             <p className="text-xs text-blue-300">Logged in as</p>
-            <p className="text-sm font-medium text-white truncate">{adminName}</p>
+            <p className="text-sm font-medium text-white truncate">{username}</p>
+            <span className={`inline-block mt-0.5 text-xs px-1.5 py-0.5 rounded-full font-medium ${
+              isAdmin ? 'bg-white/20 text-white' : 'bg-blue-800 text-blue-200'
+            }`}>
+              {isAdmin ? 'Admin' : 'Officer'}
+            </span>
           </div>
         )}
 
@@ -151,7 +163,7 @@ export default function Sidebar() {
         </Link>
 
         {/* Logout */}
-        {isAdmin && (
+        {isLoggedIn && (
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-blue-200 hover:bg-red-500/20 hover:text-red-300 transition-colors"

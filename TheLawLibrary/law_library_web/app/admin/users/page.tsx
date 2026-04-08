@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User, UserRole } from '@/types';
 import { getUsers, createUser, deleteUser, resetUserPassword } from '@/lib/api';
-import { getSession } from '@/lib/auth';
+import { getSession, hashPassword } from '@/lib/auth';
 
 type Modal =
   | { type: 'create' }
@@ -70,7 +70,8 @@ export default function AdminUsersPage() {
     if (!newUsername.trim() || !newPassword) return;
     setSubmitting(true);
     try {
-      const res = await createUser(newUsername.trim(), newPassword, newRole);
+      const hashed = await hashPassword(newPassword);
+      const res = await createUser(newUsername.trim(), hashed, newRole);
       if (res.success) {
         showToast('success', 'User created successfully');
         closeModal();
@@ -109,7 +110,8 @@ export default function AdminUsersPage() {
     if (modal?.type !== 'reset' || !resetPassword) return;
     setSubmitting(true);
     try {
-      const res = await resetUserPassword(modal.user.Username, resetPassword);
+      const hashed = await hashPassword(resetPassword);
+      const res = await resetUserPassword(modal.user.Username, hashed);
       if (res.success) {
         showToast('success', 'Password reset successfully');
         closeModal();

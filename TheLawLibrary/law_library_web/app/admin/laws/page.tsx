@@ -30,7 +30,9 @@ export default function AdminLawsPage() {
 
   // Auth guard
   useEffect(() => {
-    if (!getSession()) router.replace('/admin');
+    const session = getSession();
+    if (!session) { router.replace('/admin'); return; }
+    if (session.isAdmin !== 1) router.replace('/');
   }, [router]);
 
   useEffect(() => {
